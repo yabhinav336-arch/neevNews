@@ -42,7 +42,7 @@ const defaultSEO = {
       content: 'index, follow',
     },
     {
-      httpEquiv: 'x-ua-compatible',
+      httpEquiv: 'x-ua-compatible' as const,
       content: 'IE=edge',
     },
   ],
