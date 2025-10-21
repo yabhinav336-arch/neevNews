@@ -41,10 +41,10 @@ const LatestNews: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {articles.map((article, index) => (
                 <article key={article.id} className="card-hover group">
-                  <Link href={`/article/${article.id}`}>
+                  <Link href={`/article/${article.slug || article.id}`}>
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <Image
-                        src={article.imageUrl}
+                        src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'}
                         alt={article.title}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -72,7 +72,7 @@ const LatestNews: React.FC = () => {
                           <span>•</span>
                           <div className="flex items-center space-x-1">
                             <Clock size={14} />
-                            <span>{new Date(article.createdAt.seconds * 1000).toLocaleDateString()}</span>
+                            <span>{article.createdAt?.toDate ? article.createdAt.toDate().toLocaleDateString() : new Date(article.createdAt?.seconds * 1000).toLocaleDateString()}</span>
                           </div>
                         </div>
                       </div>
