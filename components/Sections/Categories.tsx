@@ -1,7 +1,16 @@
+
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { categories } from '@/utils/data';
+
+const categories = [
+  { id: '1', name: 'India', slug: 'india', color: 'bg-blue-500' },
+  { id: '2', name: 'Business', slug: 'business', color: 'bg-green-500' },
+  { id: '3', name: 'Entertainment', slug: 'entertainment', color: 'bg-yellow-500' },
+  { id: '4', name: 'World', slug: 'world', color: 'bg-red-500' },
+  { id: '5', name: 'Technology', slug: 'technology', color: 'bg-purple-500' },
+  { id: '6', name: 'Science', slug: 'science', color: 'bg-indigo-500' },
+];
 
 const Categories: React.FC = () => {
   return (
@@ -16,11 +25,10 @@ const Categories: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {categories.map((category, index) => (
-            <Link
+            <div
               key={category.id}
-              href={`/category/${category.slug}`}
               className="group"
             >
               <div className="card-hover p-6 md:p-8 text-center min-h-[140px] md:min-h-[160px] flex flex-col justify-center relative overflow-hidden">
@@ -45,13 +53,8 @@ const Categories: React.FC = () => {
                 <p className="text-sm text-secondary-500 dark:text-secondary-500 relative z-10">
                   {20 + (index * 7) + 15} articles
                 </p>
-
-                {/* Hover Arrow */}
-                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-                  <ArrowRight size={16} className="text-primary-600 dark:text-primary-400" />
-                </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
 

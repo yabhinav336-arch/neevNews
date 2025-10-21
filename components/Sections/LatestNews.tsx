@@ -1,10 +1,23 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, User, ArrowRight, TrendingUp } from 'lucide-react';
-import { latestArticles, trendingTopics, formatTimeAgo } from '@/utils/data';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/utils/firebase';
 
 const LatestNews: React.FC = () => {
+  const [articles, setArticles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      const querySnapshot = await getDocs(collection(db, 'news'));
+      const articlesData = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      setArticles(articlesData);
+    };
+    fetchArticles();
+  }, []);
+
   return (
     <section className="section-padding bg-white dark:bg-secondary-950">
       <div className="container-custom">
@@ -26,7 +39,7 @@ const LatestNews: React.FC = () => {
 
             {/* News Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {latestArticles.map((article, index) => (
+              {articles.map((article, index) => (
                 <article key={article.id} className="card-hover group">
                   <Link href={`/article/${article.id}`}>
                     <div className="relative aspect-[16/10] overflow-hidden">
@@ -59,12 +72,9 @@ const LatestNews: React.FC = () => {
                           <span>•</span>
                           <div className="flex items-center space-x-1">
                             <Clock size={14} />
-                            <span>{formatTimeAgo(article.publishedAt)}</span>
+                            <span>{new Date(article.createdAt.seconds * 1000).toLocaleDateString()}</span>
                           </div>
                         </div>
-                        <span className="text-xs text-secondary-500 dark:text-secondary-500">
-                          {article.readTime} min read
-                        </span>
                       </div>
                     </div>
                   </Link>
@@ -89,24 +99,6 @@ const LatestNews: React.FC = () => {
                 <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">
                   Trending Topics
                 </h3>
-              </div>
-              <div className="space-y-2">
-                {trendingTopics.map((topic, index) => (
-                  <Link
-                    key={index}
-                    href={`/topic/${topic.replace(' ', '-').toLowerCase()}`}
-                    className="block p-3 rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-colors duration-200"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-secondary-700 dark:text-secondary-300 text-sm font-medium">
-                        #{topic.replace(' ', '')}
-                      </span>
-                      <span className="text-xs text-secondary-500 dark:text-secondary-500">
-                        {10 + (index * 3) + 5}k
-                      </span>
-                    </div>
-                  </Link>
-                ))}
               </div>
             </div>
 
@@ -139,31 +131,6 @@ const LatestNews: React.FC = () => {
               <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-4">
                 Most Read
               </h3>
-              <div className="space-y-4">
-                {latestArticles.slice(0, 4).map((article, index) => (
-                  <Link
-                    key={article.id}
-                    href={`/article/${article.id}`}
-                    className="block group"
-                  >
-                    <div className="flex space-x-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
-                        <span className="text-primary-600 dark:text-primary-400 font-bold text-sm">
-                          {index + 1}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-secondary-900 dark:text-white line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
-                          {article.title}
-                        </h4>
-                        <p className="text-xs text-secondary-500 dark:text-secondary-500 mt-1">
-                          {formatTimeAgo(article.publishedAt)} • {article.readTime} min read
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
             </div>
           </div>
         </div>
