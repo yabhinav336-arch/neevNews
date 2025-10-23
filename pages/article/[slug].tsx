@@ -235,7 +235,7 @@ const ArticlePage = () => {
                 name: 'NeevNews',
                 logo: {
                   '@type': 'ImageObject',
-                  url: 'https://neevnews.com/logo.png'
+                  url: 'https://neevnews.com/logo.svg'
                 }
               },
               mainEntityOfPage: {
@@ -304,10 +304,6 @@ const ArticlePage = () => {
                     <div className="flex items-center space-x-2">
                       <Clock size={16} />
                       <span>{readingTime} min read</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Eye size={16} />
-                      <span>{article.views || 0} views</span>
                     </div>
                   </div>
                 </div>

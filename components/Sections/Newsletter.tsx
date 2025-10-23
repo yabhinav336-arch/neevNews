@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { subscribeToNewsletter } from '../../services/newsletter';
 
 const Newsletter: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -9,26 +10,24 @@ const Newsletter: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email) {
-      setStatus('error');
-      setMessage('Please enter your email address');
-      return;
-    }
-
-    if (!email.includes('@') || !email.includes('.')) {
-      setStatus('error');
-      setMessage('Please enter a valid email address');
-      return;
-    }
-
     setStatus('loading');
     
-    // Simulate API call
-    setTimeout(() => {
+    const result = await subscribeToNewsletter(email, 'newsletter-section');
+    
+    if (result.success) {
       setStatus('success');
-      setMessage('Thank you for subscribing! Check your email to confirm.');
+      setMessage(result.message);
       setEmail('');
-    }, 1500);
+    } else {
+      setStatus('error');
+      setMessage(result.message);
+    }
+
+    // Reset status after 5 seconds
+    setTimeout(() => {
+      setStatus('idle');
+      setMessage('');
+    }, 5000);
   };
 
   return (

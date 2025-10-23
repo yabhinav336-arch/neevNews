@@ -1,10 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 import { categories } from '@/utils/data';
+import { subscribeToNewsletter } from '../../services/newsletter';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+
+    const result = await subscribeToNewsletter(email, 'footer');
+    setStatus(result.success ? 'success' : 'error');
+    
+    if (result.success) {
+      setEmail('');
+    }
+
+    setTimeout(() => setStatus('idle'), 3000);
+  };
 
   return (
     <footer className="bg-secondary-900 dark:bg-secondary-950 text-secondary-300">
@@ -13,9 +31,14 @@ const Footer: React.FC = () => {
         <div className="py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center space-x-2 mb-4 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                <span className="text-white font-bold text-xl">N</span>
+            <Link href="/" className="flex items-center space-x-3 mb-4 group">
+              <div className="relative w-12 h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+                <Image
+                  src="/logo.svg"
+                  alt="NeevNews Logo"
+                  fill
+                  className="object-contain drop-shadow-md"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-bold text-white font-serif">
@@ -147,17 +170,21 @@ const Footer: React.FC = () => {
             <div className="space-y-3 mb-6">
               <div className="flex items-center space-x-3">
                 <Mail size={16} className="text-primary-400" />
-                <span className="text-secondary-400 text-sm">news@neevnews.com</span>
+                <a href="mailto:abhinavvoicebox@gmail.com" className="text-secondary-400 text-sm hover:text-primary-400 transition-colors duration-200">
+                  abhinavvoicebox@gmail.com
+                </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone size={16} className="text-primary-400" />
-                <span className="text-secondary-400 text-sm">+1 (555) 123-4567</span>
+                <a href="tel:+919369336080" className="text-secondary-400 text-sm hover:text-primary-400 transition-colors duration-200">
+                  +91 93693 36080
+                </a>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin size={16} className="text-primary-400 mt-0.5" />
                 <span className="text-secondary-400 text-sm">
-                  123 News Street<br />
-                  Media City, MC 12345
+                  Noida Sector 27<br />
+                  Uttar Pradesh, India
                 </span>
               </div>
             </div>
@@ -165,18 +192,29 @@ const Footer: React.FC = () => {
             {/* Newsletter Signup */}
             <div>
               <h4 className="text-white text-sm font-medium mb-2">Daily Newsletter</h4>
-              <form className="flex">
+              <form onSubmit={handleNewsletterSubmit} className="flex">
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Your email"
-                  className="flex-1 px-3 py-2 bg-secondary-800 border border-secondary-700 rounded-l-lg text-sm text-white placeholder-secondary-500 focus:outline-none focus:border-primary-500"
+                  disabled={status === 'loading'}
+                  className="flex-1 px-3 py-2 bg-secondary-800 border border-secondary-700 rounded-l-lg text-sm text-white placeholder-secondary-500 focus:outline-none focus:border-primary-500 disabled:opacity-50"
                   aria-label="Email for newsletter"
+                  required
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-r-lg transition-colors duration-200 text-sm font-medium"
+                  disabled={status === 'loading'}
+                  className={`px-4 py-2 rounded-r-lg transition-colors duration-200 text-sm font-medium disabled:opacity-50 ${
+                    status === 'success'
+                      ? 'bg-green-600 text-white'
+                      : status === 'error'
+                      ? 'bg-red-600 text-white'
+                      : 'bg-primary-600 hover:bg-primary-700 text-white'
+                  }`}
                 >
-                  Subscribe
+                  {status === 'loading' ? '...' : status === 'success' ? '✓' : status === 'error' ? '✗' : 'Subscribe'}
                 </button>
               </form>
             </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
+import Image from 'next/image';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { categories } from '../utils/data';
@@ -133,8 +134,13 @@ const Admin = () => {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">N</span>
+              <div className="relative w-12 h-12 flex-shrink-0">
+                <Image
+                  src="/logo.svg"
+                  alt="NeevNews Logo"
+                  fill
+                  className="object-contain drop-shadow-md"
+                />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-secondary-900 dark:text-white font-serif">
@@ -410,7 +416,7 @@ const Admin = () => {
 
                 {/* Image Preview */}
                 {imagePreview && (
-                  <div className="mb-4">
+        <div className="mb-4">
                     <div className="relative aspect-[16/9] overflow-hidden rounded-lg">
                       <img
                         src={imagePreview}
@@ -466,12 +472,12 @@ const Admin = () => {
                       {formData.status.charAt(0).toUpperCase() + formData.status.slice(1)}
                     </span>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
+        </div>
+        </div>
+        </div>
+        </div>
+    </div>
     </>
   );
 };

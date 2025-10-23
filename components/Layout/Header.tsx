@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X, Search, Bell, User, Sun, Moon } from 'lucide-react';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { categories } from '@/utils/data';
@@ -33,9 +34,15 @@ const Header: React.FC = () => {
       <div className="container-custom">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-              <span className="text-white font-bold text-lg lg:text-xl">N</span>
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="relative w-10 h-10 lg:w-12 lg:h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+              <Image
+                src="/logo.svg"
+                alt="NeevNews Logo"
+                fill
+                className="object-contain drop-shadow-sm"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span className="text-xl lg:text-2xl font-bold text-secondary-900 dark:text-white font-serif">

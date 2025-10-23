@@ -50,9 +50,9 @@ export default function Document() {
               ],
               contactPoint: {
                 '@type': 'ContactPoint',
-                telephone: '+1-555-123-4567',
+                telephone: '+91-93693-36080',
                 contactType: 'customer service',
-                email: 'contact@neevnews.com',
+                email: 'abhinavvoicebox@gmail.com',
               },
             }),
           }}
