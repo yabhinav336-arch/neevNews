@@ -134,12 +134,11 @@ const Admin = () => {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="relative w-12 h-12 flex-shrink-0">
-                <Image
+              <div className="w-12 h-12 flex-shrink-0">
+                <img
                   src="/logo.svg"
                   alt="NeevNews Logo"
-                  fill
-                  className="object-contain drop-shadow-md"
+                  className="w-full h-full object-contain drop-shadow-md"
                 />
               </div>
               <div>

@@ -32,12 +32,11 @@ const Footer: React.FC = () => {
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center space-x-3 mb-4 group">
-              <div className="relative w-12 h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
-                <Image
+              <div className="w-12 h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+                <img
                   src="/logo.svg"
                   alt="NeevNews Logo"
-                  fill
-                  className="object-contain drop-shadow-md"
+                  className="w-full h-full object-contain drop-shadow-md"
                 />
               </div>
               <div className="flex flex-col">

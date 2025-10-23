@@ -35,13 +35,11 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="relative w-10 h-10 lg:w-12 lg:h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
-              <Image
+            <div className="w-10 h-10 lg:w-12 lg:h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+              <img
                 src="/logo.svg"
                 alt="NeevNews Logo"
-                fill
-                className="object-contain drop-shadow-sm"
-                priority
+                className="w-full h-full object-contain drop-shadow-sm"
               />
             </div>
             <div className="flex flex-col">
