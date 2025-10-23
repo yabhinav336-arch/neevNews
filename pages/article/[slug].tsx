@@ -233,6 +233,9 @@ const ArticlePage = () => {
         {/* Microsoft Tags */}
         <meta name="msapplication-TileColor" content="#D9774A" />
         <meta name="msapplication-TileImage" content="/logo.png" />
+        
+        {/* Google News Subscribe with Google */}
+        <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
 
         {/* Structured Data - NewsArticle */}
         <script
@@ -322,6 +325,22 @@ const ArticlePage = () => {
       </Head>
 
       <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900">
+        {/* Google News Subscribe with Google Initialization */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (self.SWG_BASIC = self.SWG_BASIC || []).push( basicSubscriptions => {
+                basicSubscriptions.init({
+                  type: "NewsArticle",
+                  isPartOfType: ["Product"],
+                  isPartOfProductId: "CAow-YPCDA:openaccess",
+                  clientOptions: { theme: "light", lang: "en" },
+                });
+              });
+            `,
+          }}
+        />
+        
         {/* Hero Section */}
         <div className="relative">
           {/* Back Button */}
