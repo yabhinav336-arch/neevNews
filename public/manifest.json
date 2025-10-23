@@ -1,0 +1,36 @@
+{
+  "name": "NeevNews - Breaking News & Global Headlines",
+  "short_name": "NeevNews",
+  "description": "Stay informed with breaking news, global headlines, and in-depth analysis from around the world",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#D9774A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["news", "media", "journalism"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "scope": "/",
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Latest News",
+      "url": "/news",
+      "description": "View all latest news articles"
+    },
+    {
+      "name": "Create Article",
+      "url": "/admin",
+      "description": "Create a new news article"
+    }
+  ]
+}
+
