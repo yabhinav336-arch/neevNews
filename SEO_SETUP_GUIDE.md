@@ -72,7 +72,7 @@ For your first articles:
 3. **Configure Settings**:
    - **General Info**: Fill publication details
    - **Content**: Add section URLs (categories)
-   - **Branding**: Upload logo (`/public/logo.svg`)
+   - **Branding**: Upload logo (`/public/logo.png`)
    - **Contact**: abhinavvoicebox@gmail.com
 
 4. **Add News Sitemap**:

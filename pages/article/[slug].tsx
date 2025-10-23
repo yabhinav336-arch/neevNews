@@ -232,7 +232,7 @@ const ArticlePage = () => {
         
         {/* Microsoft Tags */}
         <meta name="msapplication-TileColor" content="#D9774A" />
-        <meta name="msapplication-TileImage" content="/logo.svg" />
+        <meta name="msapplication-TileImage" content="/logo.png" />
 
         {/* Structured Data - NewsArticle */}
         <script
@@ -261,7 +261,7 @@ const ArticlePage = () => {
                 name: 'NeevNews',
                 logo: {
                   '@type': 'ImageObject',
-                  url: 'https://neevnews.com/logo.svg',
+                  url: 'https://neevnews.com/logo.png',
                   width: 200,
                   height: 200,
                 },

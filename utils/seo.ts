@@ -108,7 +108,7 @@ export const generateNewsArticleSchema = (article: ArticleSEO) => {
       name: 'NeevNews',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://neevnews.com/logo.svg',
+        url: 'https://neevnews.com/logo.png',
         width: 200,
         height: 200,
       },

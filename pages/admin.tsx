@@ -136,7 +136,7 @@ const Admin = () => {
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-12 h-12 flex-shrink-0">
                 <img
-                  src="/logo.svg"
+                  src="/logo.png"
                   alt="NeevNews Logo"
                   className="w-full h-full object-contain drop-shadow-md"
                 />

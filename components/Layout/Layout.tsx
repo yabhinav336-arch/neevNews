@@ -49,9 +49,9 @@ const Layout: React.FC<LayoutProps> = ({
         {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
         
         {/* Favicon */}
-        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/logo.svg" />
-        <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+        <link rel="icon" href="/logo.png" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="icon" type="image/svg+xml" href="/logo.png" />
         
         {/* RSS Feed */}
         <link rel="alternate" type="application/rss+xml" title="NeevNews RSS Feed" href="/api/rss.xml" />

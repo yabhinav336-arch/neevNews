@@ -67,7 +67,7 @@ Verify these URLs work:
 3. **Fill Details**:
    - General information
    - Content sections (categories)
-   - Logo (upload /public/logo.svg)
+   - Logo (upload /public/logo.png)
    - Contact: abhinavvoicebox@gmail.com
 
 4. **Add News Sitemap**:

@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     <category>News</category>
     <ttl>60</ttl>
     <image>
-      <url>https://neevnews.com/logo.svg</url>
+      <url>https://neevnews.com/logo.png</url>
       <title>NeevNews</title>
       <link>https://neevnews.com</link>
     </image>

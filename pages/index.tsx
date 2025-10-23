@@ -178,7 +178,7 @@ const HomePage: React.FC = () => {
                 name: 'NeevNews',
                 logo: {
                   '@type': 'ImageObject',
-                  url: 'https://neevnews.com/logo.svg',
+                  url: 'https://neevnews.com/logo.png',
                 },
               },
             }),

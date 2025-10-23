@@ -37,7 +37,7 @@ const Header: React.FC = () => {
           <Link href="/" className="flex items-center space-x-3 group">
             <div className="w-10 h-10 lg:w-12 lg:h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
               <img
-                src="/logo.svg"
+                src="/logo.png"
                 alt="NeevNews Logo"
                 className="w-full h-full object-contain drop-shadow-sm"
               />

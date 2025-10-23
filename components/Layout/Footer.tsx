@@ -34,7 +34,7 @@ const Footer: React.FC = () => {
             <Link href="/" className="flex items-center space-x-3 mb-4 group">
               <div className="w-12 h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
                 <img
-                  src="/logo.svg"
+                  src="/logo.png"
                   alt="NeevNews Logo"
                   className="w-full h-full object-contain drop-shadow-md"
                 />
