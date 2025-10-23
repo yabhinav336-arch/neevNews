@@ -38,6 +38,7 @@ const CategoryPage = () => {
       setCategoryData(category);
       fetchCategoryArticles(category?.name || '');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   const fetchCategoryArticles = async (categoryName: string) => {
@@ -79,7 +80,8 @@ const CategoryPage = () => {
     if (categoryData) {
       fetchCategoryArticles(categoryData.name);
     }
-  }, [sortBy]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortBy, categoryData?.name]);
 
   const formatTimeAgo = (date: any) => {
     if (!date) return '';

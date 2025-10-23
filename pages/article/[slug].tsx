@@ -36,6 +36,7 @@ interface Article {
   category: string;
   author: string;
   createdAt: any;
+  updatedAt?: any;
   metaDescription: string;
   keywords: string;
   tags: string[];
@@ -60,6 +61,7 @@ const ArticlePage = () => {
     if (slug) {
       fetchArticle();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   useEffect(() => {
@@ -210,11 +212,29 @@ const ArticlePage = () => {
 
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@neevnews" />
+        <meta name="twitter:creator" content="@neevnews" />
         <meta name="twitter:title" content={article.title} />
         <meta name="twitter:description" content={article.metaDescription || article.summary} />
         <meta name="twitter:image" content={article.imageUrl} />
+        <meta name="twitter:image:alt" content={article.title} />
+        
+        {/* Additional SEO Meta Tags */}
+        <meta name="news_keywords" content={article.keywords || article.category} />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        
+        {/* Mobile App Meta Tags */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="NeevNews" />
+        
+        {/* Microsoft Tags */}
+        <meta name="msapplication-TileColor" content="#D9774A" />
+        <meta name="msapplication-TileImage" content="/logo.svg" />
 
-        {/* Structured Data */}
+        {/* Structured Data - NewsArticle */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -223,25 +243,79 @@ const ArticlePage = () => {
               '@type': 'NewsArticle',
               headline: article.title,
               description: article.summary,
-              image: article.imageUrl,
-              datePublished: article.createdAt?.toDate?.()?.toISOString() || '',
-              dateModified: article.createdAt?.toDate?.()?.toISOString() || '',
+              image: {
+                '@type': 'ImageObject',
+                url: article.imageUrl,
+                width: 1200,
+                height: 630,
+              },
+              datePublished: article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+              dateModified: article.updatedAt?.toDate?.()?.toISOString() || article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
               author: {
                 '@type': 'Person',
-                name: article.author
+                name: article.author,
+                url: `https://neevnews.com/author/${article.author.toLowerCase().replace(/\s+/g, '-')}`,
               },
               publisher: {
                 '@type': 'NewsMediaOrganization',
                 name: 'NeevNews',
                 logo: {
                   '@type': 'ImageObject',
-                  url: 'https://neevnews.com/logo.svg'
-                }
+                  url: 'https://neevnews.com/logo.svg',
+                  width: 200,
+                  height: 200,
+                },
+                url: 'https://neevnews.com',
+                contactPoint: {
+                  '@type': 'ContactPoint',
+                  telephone: '+91-93693-36080',
+                  contactType: 'customer service',
+                  email: 'abhinavvoicebox@gmail.com',
+                  areaServed: 'IN',
+                  availableLanguage: 'English',
+                },
               },
               mainEntityOfPage: {
                 '@type': 'WebPage',
-                '@id': `https://neevnews.com/article/${article.slug}`
-              }
+                '@id': `https://neevnews.com/article/${article.slug}`,
+              },
+              articleSection: article.category,
+              keywords: article.keywords || article.tags?.join(', ') || article.category,
+              wordCount: article.content?.split(' ').length || 0,
+              articleBody: article.content,
+              isAccessibleForFree: true,
+              inLanguage: 'en-US',
+            })
+          }}
+        />
+        
+        {/* Breadcrumb Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: 'Home',
+                  item: 'https://neevnews.com',
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: article.category,
+                  item: `https://neevnews.com/category/${article.category.toLowerCase()}`,
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 3,
+                  name: article.title,
+                  item: `https://neevnews.com/article/${article.slug}`,
+                },
+              ],
             })
           }}
         />

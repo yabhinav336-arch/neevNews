@@ -36,6 +36,7 @@ const AllNewsPage = () => {
 
   useEffect(() => {
     filterAndSortArticles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articles, selectedCategory, sortBy, searchQuery]);
 
   const fetchAllArticles = async () => {

@@ -1,4 +1,4 @@
-import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 
 export interface NewsletterSubscriber {
@@ -63,7 +63,7 @@ export const unsubscribeFromNewsletter = async (
 
     // Update isActive to false instead of deleting
     const doc = querySnapshot.docs[0];
-    await doc.ref.update({ isActive: false, unsubscribedAt: new Date() });
+    await updateDoc(doc.ref, { isActive: false, unsubscribedAt: new Date() });
 
     return { success: true, message: 'Successfully unsubscribed' };
   } catch (error) {

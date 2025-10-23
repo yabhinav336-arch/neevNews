@@ -53,6 +53,10 @@ const Layout: React.FC<LayoutProps> = ({
         <link rel="apple-touch-icon" href="/logo.svg" />
         <link rel="icon" type="image/svg+xml" href="/logo.svg" />
         
+        {/* RSS Feed */}
+        <link rel="alternate" type="application/rss+xml" title="NeevNews RSS Feed" href="/api/rss.xml" />
+        <link rel="alternate" type="application/atom+xml" title="NeevNews Atom Feed" href="/api/rss.xml" />
+        
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

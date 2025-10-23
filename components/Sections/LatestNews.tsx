@@ -7,8 +7,24 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { subscribeToNewsletter } from '../../services/newsletter';
 
+interface Article {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  imageUrl: string;
+  category: string;
+  author: string;
+  createdAt: any;
+  slug: string;
+  views: number;
+  status: string;
+  tags?: string[];
+  featured?: boolean;
+}
+
 const LatestNews: React.FC = () => {
-  const [articles, setArticles] = useState<any[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState('');
@@ -17,7 +33,10 @@ const LatestNews: React.FC = () => {
     const fetchArticles = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'news'));
-        const articlesData = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        const articlesData = querySnapshot.docs.map(doc => ({ 
+          ...doc.data(), 
+          id: doc.id 
+        })) as Article[];
         
         // Filter published articles and sort by date
         const publishedArticles = articlesData.filter(article => article.status === 'published');
