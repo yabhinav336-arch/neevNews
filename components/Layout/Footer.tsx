@@ -35,13 +35,13 @@ const Footer: React.FC = () => {
               <div className="w-12 h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
                 <img
                   src="/logo.png"
-                  alt="NeevNews Logo"
+                  alt="Neev News Logo"
                   className="w-full h-full object-contain drop-shadow-md"
                 />
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-bold text-white font-serif">
-                  NeevNews
+                  Neev News
                 </span>
                 <span className="text-sm text-secondary-400 -mt-1">
                   Global News & Articles

@@ -261,7 +261,7 @@ const ArticlePage = () => {
               },
               publisher: {
                 '@type': 'NewsMediaOrganization',
-                name: 'NeevNews',
+                name: 'Neev News',
                 logo: {
                   '@type': 'ImageObject',
                   url: 'https://neevnews.com/logo.png',

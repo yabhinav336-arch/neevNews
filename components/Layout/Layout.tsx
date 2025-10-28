@@ -14,13 +14,13 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({
   children,
-  title = 'NeevNews - Global News & Articles',
-  description = 'Stay informed with NeevNews - your trusted source for global news, in-depth analysis, and compelling stories from around the world.',
+  title = 'Neev News - Global News & Articles',
+  description = 'Stay informed with Neev News - your trusted source for global news, in-depth analysis, and compelling stories from around the world.',
   keywords = 'news, global news, articles, world news, politics, technology, business, breaking news',
   ogImage = '/og-image.jpg',
   canonicalUrl,
 }) => {
-  const fullTitle = title.includes('NeevNews') ? title : `${title} | NeevNews`;
+  const fullTitle = title.includes('Neev News') ? title : `${title} | Neev News`;
 
   return (
     <>
@@ -37,7 +37,7 @@ const Layout: React.FC<LayoutProps> = ({
         <meta property="og:title" content={fullTitle} />
         <meta property="og:description" content={description} />
         <meta property="og:image" content={ogImage} />
-        <meta property="og:site_name" content="NeevNews" />
+        <meta property="og:site_name" content="Neev News" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />

@@ -124,8 +124,8 @@ const Admin = () => {
   return (
     <>
       <Head>
-        <title>Admin Panel - Create News Article | NeevNews</title>
-        <meta name="description" content="Admin panel for creating and managing news articles on NeevNews" />
+        <title>Admin Panel - Create News Article | Neev News</title>
+        <meta name="description" content="Admin panel for creating and managing news articles on Neev News" />
         <meta name="robots" content="noindex, nofollow" />
       </Head>
       
@@ -137,7 +137,7 @@ const Admin = () => {
               <div className="w-12 h-12 flex-shrink-0">
                 <img
                   src="/logo.png"
-                  alt="NeevNews Logo"
+                  alt="Neev News Logo"
                   className="w-full h-full object-contain drop-shadow-md"
                 />
               </div>

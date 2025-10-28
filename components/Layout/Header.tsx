@@ -38,14 +38,14 @@ const Header: React.FC = () => {
             <div className="w-10 h-10 lg:w-12 lg:h-12 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
               <img
                 src="/logo.png"
-                alt="NeevNews Logo"
+                alt="Neev News Logo"
                 className="w-full h-full object-contain drop-shadow-sm"
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl lg:text-2xl font-bold text-secondary-900 dark:text-white font-serif">
-                NeevNews
-              </span>
+              <h1 className="text-xl lg:text-2xl font-bold text-secondary-900 dark:text-white font-serif">
+                Neev News
+              </h1>
               <span className="text-xs text-secondary-500 dark:text-secondary-400 -mt-1 hidden sm:block">
                 Global News & Articles
               </span>

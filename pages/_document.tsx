@@ -39,7 +39,7 @@ export default function Document() {
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'NewsMediaOrganization',
-              name: 'NeevNews',
+              name: 'Neev News',
               url: 'https://neevnews.com',
               logo: 'https://neevnews.com/logo.png',
               description: 'Global news and articles platform providing trusted journalism and in-depth analysis.',

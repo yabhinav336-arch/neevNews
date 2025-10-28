@@ -137,11 +137,11 @@ const HomePage: React.FC = () => {
   };
 
   const seoData = {
-    title: 'NeevNews - Breaking News, Latest Updates & Global Headlines',
-    description: 'Stay informed with NeevNews - your trusted source for breaking news, global headlines, and in-depth analysis. Covering politics, technology, business, science, and world events 24/7.',
-    keywords: 'breaking news, latest news, global headlines, world news, politics, technology, business, science, health, sports, entertainment, journalism, live news',
+    title: 'Neev News - Breaking News, Latest Updates & Global Headlines',
+    description: 'Stay informed with Neev News - your trusted source for breaking news, global headlines, and in-depth analysis. Covering politics, technology, business, science, and world events 24/7.',
+    keywords: 'breaking news, latest news, global headlines, world news, politics, technology, business, science, health, sports, entertainment, journalism, live news, Neev News',
     openGraph: {
-      title: 'NeevNews - Breaking News & Global Headlines',
+      title: 'Neev News - Breaking News & Global Headlines',
       description: 'Your trusted source for breaking news, global headlines, and in-depth analysis from around the world.',
       images: [
         {
@@ -165,7 +165,7 @@ const HomePage: React.FC = () => {
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
-              name: 'NeevNews',
+              name: 'Neev News',
               url: 'https://neevnews.com',
               description: 'Global news and articles platform providing trusted journalism and in-depth analysis.',
               potentialAction: {
@@ -175,7 +175,7 @@ const HomePage: React.FC = () => {
               },
               publisher: {
                 '@type': 'NewsMediaOrganization',
-                name: 'NeevNews',
+                name: 'Neev News',
                 logo: {
                   '@type': 'ImageObject',
                   url: 'https://neevnews.com/logo.png',
