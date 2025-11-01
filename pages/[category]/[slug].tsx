@@ -61,6 +61,7 @@ const ArticlePage = () => {
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [readingTime, setReadingTime] = useState(0);
@@ -88,17 +89,28 @@ const ArticlePage = () => {
 
   const fetchArticle = async (articleSlug: string) => {
     if (!articleSlug) return;
-    
+
     setLoading(true);
+    setError(null);
+
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.error('Article fetch timeout for slug:', articleSlug);
+        setError('Request timeout. Please check your connection and try again.');
+        setLoading(false);
+      }
+    }, 10000); // 10 second timeout
+
     try {
       const articlesRef = collection(db, 'news');
-      
+
       // First try querying with slug and status (requires composite index)
       let querySnapshot;
       try {
         const q = query(
-          articlesRef, 
-          where('slug', '==', articleSlug), 
+          articlesRef,
+          where('slug', '==', articleSlug),
           where('status', '==', 'published')
         );
         querySnapshot = await getDocs(q);
@@ -112,31 +124,36 @@ const ArticlePage = () => {
           throw indexError;
         }
       }
-      
+
+      clearTimeout(timeoutId);
+
       if (!querySnapshot || querySnapshot.empty) {
         console.error('Article not found for slug:', articleSlug);
+        setError(`Article not found: ${articleSlug}`);
         setLoading(false);
         return;
       }
-      
+
       // Get all articles with this slug (in case of fallback query)
       const articles = querySnapshot.docs.map(doc => ({
         ...doc.data(),
         id: doc.id
       })) as Article[];
-      
+
       // Filter by status if we used fallback query
       const publishedArticles = articles.filter(article => article.status === 'published');
-      
+
       if (publishedArticles.length === 0) {
         console.error('No published article found for slug:', articleSlug);
+        setError(`No published article found for: ${articleSlug}`);
         setLoading(false);
         return;
       }
-      
+
       const articleData = publishedArticles[0];
       setArticle(articleData);
-      
+      setLoading(false);
+
       // Validate category matches URL category
       if (categorySlug && typeof categorySlug === 'string') {
         const expectedCategorySlug = getCategorySlug(articleData.category);
@@ -147,16 +164,17 @@ const ArticlePage = () => {
           return;
         }
       }
-      
+
       fetchRelatedArticles(articleData.category, articleSlug);
     } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error('Error fetching article:', error);
       console.error('Error details:', {
         code: error?.code,
         message: error?.message,
         slug: articleSlug
       });
-      // Don't redirect to 404 - let it show the not found state in the component
+      setError(error?.message || 'Failed to load article. Please try again.');
       setLoading(false);
     }
   };
@@ -244,32 +262,38 @@ const ArticlePage = () => {
   }
 
   if (!article) {
-    // Don't redirect to 404 immediately - show loading state longer
-    // This prevents premature redirects during initial load
-    if (!router.isReady || articleSlug) {
-      return (
-        <Layout>
-          <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-secondary-600 dark:text-secondary-400">Loading article...</p>
-            </div>
-          </div>
-        </Layout>
-      );
-    }
-    
     return (
       <Layout>
         <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4">Article not found</h1>
-            <p className="text-secondary-600 dark:text-secondary-400 mb-4">
-              Slug: {articleSlug || 'Not provided'}
-            </p>
-            <Link href="/" className="btn-primary">
-              Back to Home
-            </Link>
+          <div className="text-center max-w-2xl mx-auto px-4">
+            {error ? (
+              <>
+                <div className="text-6xl mb-6">📰</div>
+                <h1 className="text-3xl font-bold text-secondary-900 dark:text-white mb-4">Article Not Found</h1>
+                <p className="text-secondary-600 dark:text-secondary-400 mb-2">
+                  We couldn't find the article you're looking for.
+                </p>
+                <p className="text-sm text-secondary-500 dark:text-secondary-500 mb-6 font-mono bg-secondary-100 dark:bg-secondary-800 p-3 rounded">
+                  {error}
+                </p>
+                <div className="space-x-4">
+                  <Link href="/" className="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                    Back to Home
+                  </Link>
+                  <button
+                    onClick={() => router.back()}
+                    className="inline-block px-6 py-3 bg-secondary-200 dark:bg-secondary-700 hover:bg-secondary-300 dark:hover:bg-secondary-600 text-secondary-700 dark:text-secondary-300 font-semibold rounded-lg transition-colors duration-200"
+                  >
+                    Go Back
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-secondary-600 dark:text-secondary-400">Loading article...</p>
+              </>
+            )}
           </div>
         </div>
       </Layout>
