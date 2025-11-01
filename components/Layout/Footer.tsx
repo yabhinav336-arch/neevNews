@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
+import { Mail, Phone, MapPin, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { categories } from '@/utils/data';
 import { subscribeToNewsletter } from '../../services/newsletter';
 
@@ -54,39 +54,31 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex space-x-4">
               <a
-                href="#"
-                className="p-2 bg-secondary-800 hover:bg-primary-600 rounded-lg transition-colors duration-200"
-                aria-label="Facebook"
-              >
-                <Facebook size={18} />
-              </a>
-              <a
-                href="#"
-                className="p-2 bg-secondary-800 hover:bg-primary-600 rounded-lg transition-colors duration-200"
-                aria-label="Twitter"
-              >
-                <Twitter size={18} />
-              </a>
-              <a
-                href="#"
-                className="p-2 bg-secondary-800 hover:bg-primary-600 rounded-lg transition-colors duration-200"
-                aria-label="Instagram"
-              >
-                <Instagram size={18} />
-              </a>
-              <a
-                href="#"
+                href="https://www.linkedin.com/in/neev-news-855010395/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 bg-secondary-800 hover:bg-primary-600 rounded-lg transition-colors duration-200"
                 aria-label="LinkedIn"
               >
                 <Linkedin size={18} />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/neevnews/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 bg-secondary-800 hover:bg-primary-600 rounded-lg transition-colors duration-200"
-                aria-label="YouTube"
+                aria-label="Instagram"
               >
-                <Youtube size={18} />
+                <Instagram size={18} />
+              </a>
+              <a
+                href="https://x.com/NeevNews"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-secondary-800 hover:bg-primary-600 rounded-lg transition-colors duration-200"
+                aria-label="X (Twitter)"
+              >
+                <Twitter size={18} />
               </a>
             </div>
           </div>
