@@ -11,6 +11,7 @@ const Custom404 = () => {
         <meta name="robots" content="noindex, nofollow" />
       </Head>
       
+      
       <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
         <div className="container-custom">
           <div className="max-w-2xl mx-auto text-center">
