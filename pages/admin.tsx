@@ -1,12 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { categories } from '../utils/data';
-import { Plus, Upload, Eye, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { Plus, Upload, Eye, Save, AlertCircle, CheckCircle, List, Edit, Trash2, X, ArrowLeft } from 'lucide-react';
+
+interface Story {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  imageUrl: string;
+  category: string;
+  author: string;
+  metaDescription: string;
+  keywords: string;
+  tags: string[];
+  featured: boolean;
+  status: string;
+  slug: string;
+  createdAt: any;
+  updatedAt: any;
+  views: number;
+  likes: number;
+}
 
 const Admin = () => {
+  const [view, setView] = useState<'create' | 'list' | 'edit'>('create');
+  const [stories, setStories] = useState<Story[]>([]);
+  const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
+  const [loadingStories, setLoadingStories] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: '',
     summary: '',
@@ -38,6 +63,98 @@ const Admin = () => {
     const value = e.target.value;
     setFormData(prev => ({ ...prev, imageUrl: value }));
     setImagePreview(value);
+  };
+
+  // Fetch all stories
+  const fetchStories = async () => {
+    setLoadingStories(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, 'news'));
+      const storiesData: Story[] = [];
+      querySnapshot.forEach((doc) => {
+        storiesData.push({ id: doc.id, ...doc.data() } as Story);
+      });
+      // Sort by creation date (newest first)
+      storiesData.sort((a, b) => {
+        const dateA = a.createdAt?.toDate?.() || new Date(0);
+        const dateB = b.createdAt?.toDate?.() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
+      setStories(storiesData);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+      setErrorMessage('Failed to fetch stories');
+    } finally {
+      setLoadingStories(false);
+    }
+  };
+
+  // Load a story for editing
+  const loadStoryForEdit = async (storyId: string) => {
+    try {
+      const docRef = doc(db, 'news', storyId);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const story = docSnap.data();
+        setFormData({
+          title: story.title || '',
+          summary: story.summary || '',
+          content: story.content || '',
+          imageUrl: story.imageUrl || '',
+          category: story.category || '',
+          author: story.author || '',
+          metaDescription: story.metaDescription || '',
+          keywords: story.keywords || '',
+          tags: Array.isArray(story.tags) ? story.tags.join(', ') : '',
+          featured: story.featured || false,
+          status: story.status || 'draft'
+        });
+        setImagePreview(story.imageUrl || '');
+        setEditingStoryId(storyId);
+        setView('edit');
+      }
+    } catch (error) {
+      console.error('Error loading story:', error);
+      setErrorMessage('Failed to load story for editing');
+    }
+  };
+
+  // Delete a story
+  const handleDelete = async (storyId: string) => {
+    if (!confirm('Are you sure you want to delete this story? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, 'news', storyId));
+      setStories(stories.filter(story => story.id !== storyId));
+      alert('Story deleted successfully');
+    } catch (error) {
+      console.error('Error deleting story:', error);
+      alert('Failed to delete story');
+    }
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      summary: '',
+      content: '',
+      imageUrl: '',
+      category: '',
+      author: '',
+      metaDescription: '',
+      keywords: '',
+      tags: '',
+      featured: false,
+      status: 'draft'
+    });
+    setImagePreview('');
+    setEditingStoryId(null);
+    setSubmitStatus('idle');
+    setErrorMessage('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,36 +203,43 @@ const Admin = () => {
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
         featured: formData.featured,
         status: formData.status,
-        createdAt: new Date(),
         updatedAt: new Date(),
         slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        views: 0,
-        likes: 0
       };
 
-      const docRef = await addDoc(collection(db, 'news'), articleData);
-      
-      setSubmitStatus('success');
-      setFormData({
-        title: '',
-        summary: '',
-        content: '',
-        imageUrl: '',
-        category: '',
-        author: '',
-        metaDescription: '',
-        keywords: '',
-        tags: '',
-        featured: false,
-        status: 'draft'
-      });
-      setImagePreview('');
-      
-      console.log('Article created with ID: ', docRef.id);
+      if (editingStoryId) {
+        // Update existing story
+        const docRef = doc(db, 'news', editingStoryId);
+        await updateDoc(docRef, articleData);
+        setSubmitStatus('success');
+        alert('Story updated successfully!');
+        
+        // Refresh the stories list if we're in list view
+        if (view === 'edit') {
+          setTimeout(() => {
+            setView('list');
+            fetchStories();
+            resetForm();
+          }, 1000);
+        }
+      } else {
+        // Create new story
+        const newArticleData = {
+          ...articleData,
+          createdAt: new Date(),
+          views: 0,
+          likes: 0
+        };
+        
+        const docRef = await addDoc(collection(db, 'news'), newArticleData);
+        setSubmitStatus('success');
+        resetForm();
+        console.log('Article created with ID: ', docRef.id);
+      }
     } catch (error) {
-      console.error('Error creating article: ', error);
+      console.error('Error saving article: ', error);
       setSubmitStatus('error');
-      setErrorMessage('Failed to create article. Please try again.');
+      setErrorMessage(`Failed to ${editingStoryId ? 'update' : 'create'} article. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -133,29 +257,153 @@ const Admin = () => {
         <div className="container-custom py-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 flex-shrink-0">
-                <img
-                  src="/logo.png"
-                  alt="Neev News Logo"
-                  className="w-full h-full object-contain drop-shadow-md"
-                />
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 flex-shrink-0">
+                  <img
+                    src="/logo.png"
+                    alt="Neev News Logo"
+                    className="w-full h-full object-contain drop-shadow-md"
+                  />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-secondary-900 dark:text-white font-serif">
+                    Admin Panel
+                  </h1>
+                  <p className="text-secondary-600 dark:text-secondary-400">
+                    Create and manage news articles
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-secondary-900 dark:text-white font-serif">
-                  Admin Panel
-                </h1>
-                <p className="text-secondary-600 dark:text-secondary-400">
-                  Create and manage news articles
-                </p>
+              
+              {/* View Toggle Buttons */}
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    setView('create');
+                    resetForm();
+                  }}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                    view === 'create'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-white dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-700'
+                  }`}
+                >
+                  <Plus size={20} />
+                  <span>Create New</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setView('list');
+                    fetchStories();
+                  }}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                    view === 'list'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-white dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-700'
+                  }`}
+                >
+                  <List size={20} />
+                  <span>View All Stories</span>
+                </button>
               </div>
             </div>
           </div>
 
+          {/* Stories List View */}
+          {view === 'list' && (
+            <div className="card p-8">
+              <h2 className="text-2xl font-bold text-secondary-900 dark:text-white mb-6">
+                All Stories
+              </h2>
+              
+              {loadingStories ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : stories.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-secondary-600 dark:text-secondary-400">No stories found</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {stories.map((story) => (
+                    <div
+                      key={story.id}
+                      className="flex items-center justify-between p-4 border border-secondary-200 dark:border-secondary-700 rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-colors duration-200"
+                    >
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-secondary-900 dark:text-white mb-1">
+                          {story.title}
+                        </h3>
+                        <div className="flex items-center space-x-4 text-sm text-secondary-600 dark:text-secondary-400">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            story.status === 'published'
+                              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                              : story.status === 'draft'
+                              ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                              : 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200'
+                          }`}>
+                            {story.status}
+                          </span>
+                          <span>{story.category}</span>
+                          <span>By {story.author}</span>
+                          {story.featured && (
+                            <span className="px-2 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 text-xs rounded font-medium">
+                              Featured
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2 ml-4">
+                        <button
+                          onClick={() => loadStoryForEdit(story.id)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900 rounded-lg transition-colors duration-200"
+                          title="Edit story"
+                        >
+                          <Edit size={20} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(story.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900 rounded-lg transition-colors duration-200"
+                          title="Delete story"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Create/Edit Form View */}
+          {(view === 'create' || view === 'edit') && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Form */}
             <div className="lg:col-span-2">
               <div className="card p-8">
+                {view === 'edit' && (
+                  <div className="mb-6 pb-6 border-b border-secondary-200 dark:border-secondary-700">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-bold text-secondary-900 dark:text-white">
+                        Edit Story
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setView('list');
+                          resetForm();
+                        }}
+                        className="flex items-center space-x-2 px-4 py-2 text-secondary-600 dark:text-secondary-400 hover:text-secondary-900 dark:hover:text-white transition-colors duration-200"
+                      >
+                        <ArrowLeft size={20} />
+                        <span>Back to List</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Title */}
                   <div>
@@ -377,20 +625,33 @@ const Admin = () => {
                       {isSubmitting ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Creating...</span>
+                          <span>{editingStoryId ? 'Updating...' : 'Creating...'}</span>
                         </>
                       ) : (
                         <>
                           <Save size={20} />
-                          <span>Create Article</span>
+                          <span>{editingStoryId ? 'Update Story' : 'Create Article'}</span>
                         </>
                       )}
                     </button>
 
+                    {view === 'edit' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setView('list');
+                          resetForm();
+                        }}
+                        className="px-6 py-3 bg-secondary-200 dark:bg-secondary-700 text-secondary-700 dark:text-secondary-300 font-semibold rounded-lg hover:bg-secondary-300 dark:hover:bg-secondary-600 transition-colors duration-200"
+                      >
+                        Cancel
+                      </button>
+                    )}
+
                     {submitStatus === 'success' && (
                       <div className="flex items-center space-x-2 text-green-600 dark:text-green-400">
                         <CheckCircle size={20} />
-                        <span>Article created successfully!</span>
+                        <span>{editingStoryId ? 'Story updated successfully!' : 'Article created successfully!'}</span>
                       </div>
                     )}
 
@@ -415,7 +676,7 @@ const Admin = () => {
 
                 {/* Image Preview */}
                 {imagePreview && (
-        <div className="mb-4">
+                  <div className="mb-4">
                     <div className="relative aspect-[16/9] overflow-hidden rounded-lg">
                       <img
                         src={imagePreview}
@@ -471,12 +732,13 @@ const Admin = () => {
                       {formData.status.charAt(0).toUpperCase() + formData.status.slice(1)}
                     </span>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          )}
         </div>
-        </div>
-        </div>
-        </div>
-        </div>
-    </div>
+      </div>
     </>
   );
 };
