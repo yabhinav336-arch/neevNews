@@ -32,7 +32,7 @@ const PolicyPage = () => {
                 </p>
               </div>
             </div>
-            <p className="text-white/80">Last updated: October 23, 2025</p>
+            <p className="text-white/80">Effective from: September 8, 2025</p>
           </div>
         </div>
 

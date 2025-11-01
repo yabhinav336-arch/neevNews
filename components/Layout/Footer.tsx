@@ -161,8 +161,8 @@ const Footer: React.FC = () => {
             <div className="space-y-3 mb-6">
               <div className="flex items-center space-x-3">
                 <Mail size={16} className="text-primary-400" />
-                <a href="mailto:abhinavvoicebox@gmail.com" className="text-secondary-400 text-sm hover:text-primary-400 transition-colors duration-200">
-                  abhinavvoicebox@gmail.com
+                <a href="mailto:theneevnews@gmail.com" className="text-secondary-400 text-sm hover:text-primary-400 transition-colors duration-200">
+                  theneevnews@gmail.com
                 </a>
               </div>
               <div className="flex items-center space-x-3">
@@ -216,7 +216,7 @@ const Footer: React.FC = () => {
         <div className="py-8 border-t border-secondary-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-secondary-400 text-sm">
-              © {currentYear} NeevNews. All rights reserved.
+              © 2025 NeevNews. All rights reserved. Launching September 8, 2025.
             </div>
             <div className="flex items-center space-x-6 text-sm">
               <Link
