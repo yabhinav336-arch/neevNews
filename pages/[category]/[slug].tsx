@@ -69,7 +69,7 @@ const ArticlePage = () => {
     // Wait for router to be ready
     if (!router.isReady) return;
     
-    if (articleSlug && typeof articleSlug === 'string' && typeof categorySlug === 'string') {
+    if (articleSlug && typeof articleSlug === 'string') {
       fetchArticle(articleSlug);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -115,7 +115,7 @@ const ArticlePage = () => {
       
       if (!querySnapshot || querySnapshot.empty) {
         console.error('Article not found for slug:', articleSlug);
-        router.push('/404');
+        setLoading(false);
         return;
       }
       
@@ -130,7 +130,7 @@ const ArticlePage = () => {
       
       if (publishedArticles.length === 0) {
         console.error('No published article found for slug:', articleSlug);
-        router.push('/404');
+        setLoading(false);
         return;
       }
       
@@ -156,8 +156,7 @@ const ArticlePage = () => {
         message: error?.message,
         slug: articleSlug
       });
-      router.push('/404');
-    } finally {
+      // Don't redirect to 404 - let it show the not found state in the component
       setLoading(false);
     }
   };
@@ -245,11 +244,29 @@ const ArticlePage = () => {
   }
 
   if (!article) {
+    // Don't redirect to 404 immediately - show loading state longer
+    // This prevents premature redirects during initial load
+    if (!router.isReady || articleSlug) {
+      return (
+        <Layout>
+          <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-secondary-600 dark:text-secondary-400">Loading article...</p>
+            </div>
+          </div>
+        </Layout>
+      );
+    }
+    
     return (
       <Layout>
         <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4">Article not found</h1>
+            <p className="text-secondary-600 dark:text-secondary-400 mb-4">
+              Slug: {articleSlug || 'Not provided'}
+            </p>
             <Link href="/" className="btn-primary">
               Back to Home
             </Link>

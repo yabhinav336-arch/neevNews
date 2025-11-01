@@ -1,14 +1,15 @@
 [build]
   command = "npm run build"
-  publish = "out"
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "18"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Netlify automatically detects Next.js and handles SSR
+# If you need the plugin, install it: npm install --save-dev @netlify/plugin-nextjs
+# Then uncomment the line below:
+# [[plugins]]
+#   package = "@netlify/plugin-nextjs"
 
 [context.production]
   command = "npm run build"

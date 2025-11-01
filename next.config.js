@@ -2,7 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'export',
+  // Removed output: 'export' to enable dynamic routes
+  // Dynamic routes like [category]/[slug] require SSR
   trailingSlash: true,
   images: {
     unoptimized: true,
