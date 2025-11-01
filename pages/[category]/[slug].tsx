@@ -454,75 +454,65 @@ const ArticlePage = () => {
           }}
         />
         
-        {/* Hero Section */}
-        <div className="relative">
-          {/* Back Button */}
-          <div className="absolute top-8 left-8 z-10">
+        {/* Header Section */}
+        <div className="bg-white dark:bg-secondary-950 border-b border-secondary-200 dark:border-secondary-800">
+          <div className="container-custom py-6">
+            {/* Back Button */}
             <Link
               href="/"
-              className="flex items-center space-x-2 px-4 py-2 bg-white/90 dark:bg-secondary-900/90 backdrop-blur-sm rounded-lg hover:bg-white dark:hover:bg-secondary-800 transition-colors duration-200 text-secondary-700 dark:text-secondary-300"
+              className="inline-flex items-center space-x-2 px-4 py-2 mb-6 text-secondary-600 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
             >
               <ArrowLeft size={18} />
               <span>Back to News</span>
             </Link>
           </div>
-
-          {/* Featured Image */}
-          <div className="relative h-[60vh] min-h-[400px] overflow-hidden">
-            <Image
-              src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'}
-              alt={article.title}
-              fill
-              className="object-cover"
-              priority
-            />
-            
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            
-            {/* Article Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-8">
-              <div className="container-custom">
-                <div className="max-w-4xl">
-                  {/* Category Badge */}
-                  <div className="mb-4">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white ${getCategoryColor(article.category)}`}>
-                      <span className="mr-2">{getCategoryIcon(article.category)}</span>
-                      {article.category}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 font-serif leading-tight">
-                    {article.title}
-                  </h1>
-
-                  {/* Article Meta */}
-                  <div className="flex flex-wrap items-center gap-6 text-white/90 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <User size={16} />
-                      <span>By {article.author}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Calendar size={16} />
-                      <span>{formatDate(article.createdAt)}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Clock size={16} />
-                      <span>{readingTime} min read</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <div className="container-custom py-12">
+        <div className="container-custom py-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             {/* Main Content */}
             <article className="lg:col-span-3">
               <div className="max-w-4xl">
+                {/* Category Badge */}
+                <div className="mb-4">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(article.category)} text-white`}>
+                    <span className="mr-2">{getCategoryIcon(article.category)}</span>
+                    {article.category}
+                  </span>
+                </div>
+
+                {/* Article Title - First */}
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-secondary-900 dark:text-white mb-6 font-serif leading-tight">
+                  {article.title}
+                </h1>
+
+                {/* Article Meta Info */}
+                <div className="flex flex-wrap items-center gap-6 text-secondary-600 dark:text-secondary-400 text-sm mb-8">
+                  <div className="flex items-center space-x-2">
+                    <User size={16} />
+                    <span>By {article.author}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Calendar size={16} />
+                    <span>{formatDate(article.createdAt)}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Clock size={16} />
+                    <span>{readingTime} min read</span>
+                  </div>
+                </div>
+
+                {/* Featured Image - Second */}
+                <div className="relative w-full aspect-video mb-8 rounded-xl overflow-hidden">
+                  <Image
+                    src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'}
+                    alt={article.title}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+
                 {/* Article Summary */}
                 <div className="mb-8 p-6 bg-primary-50 dark:bg-primary-900/20 rounded-xl border-l-4 border-primary-500">
                   <p className="text-lg text-secondary-700 dark:text-secondary-300 leading-relaxed">
