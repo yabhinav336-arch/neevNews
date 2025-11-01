@@ -67,7 +67,7 @@ Then create a `firestore.indexes.json` file:
 After creating the index:
 1. The index status will show as "Building" initially
 2. Once it shows "Enabled" (usually 1-5 minutes), your article pages will work correctly
-3. Test by visiting: `https://neevnews.app/article/india-successfully-tests-hypersonic-missile-joins-elite-global-club/`
+3. Test by visiting: `https://neevnews.app/politics/india-successfully-tests-hypersonic-missile-joins-elite-global-club/`
 
 ### Current Query
 
@@ -93,6 +93,9 @@ This requires the composite index: `slug (Ascending) + status (Ascending)`
 - Verify the slug exists in your Firestore `news` collection
 - Check that the `slug` field matches exactly (case-sensitive)
 - Ensure the article's `status` is set to `'published'`
+- Verify the URL format: `/{category-slug}/{article-slug}` (e.g., `/politics/article-slug`)
+
+**Important:** The application will work even without the composite index - it will automatically fall back to a slug-only query and filter by status client-side. However, creating the index improves performance.
 
 **Index Status: "Building"**
 - This is normal - wait 1-5 minutes

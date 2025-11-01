@@ -66,11 +66,14 @@ const ArticlePage = () => {
   const [readingTime, setReadingTime] = useState(0);
 
   useEffect(() => {
-    if (articleSlug && typeof articleSlug === 'string') {
+    // Wait for router to be ready
+    if (!router.isReady) return;
+    
+    if (articleSlug && typeof articleSlug === 'string' && typeof categorySlug === 'string') {
       fetchArticle(articleSlug);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [articleSlug]);
+  }, [articleSlug, categorySlug, router.isReady]);
 
   useEffect(() => {
     if (article?.content) {
@@ -80,45 +83,79 @@ const ArticlePage = () => {
     }
   }, [article]);
 
-  // Validate category matches article category and redirect if needed
-  useEffect(() => {
-    if (article && categorySlug && typeof categorySlug === 'string') {
-      const expectedCategorySlug = getCategorySlug(article.category);
-      if (categorySlug !== expectedCategorySlug) {
-        // Redirect to correct URL
-        router.replace(getArticleUrl(article));
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [article, categorySlug]);
+  // Category validation is now handled in fetchArticle
+  // This effect is no longer needed
 
   const fetchArticle = async (articleSlug: string) => {
+    if (!articleSlug) return;
+    
     setLoading(true);
     try {
       const articlesRef = collection(db, 'news');
-      // Query by slug - requires Firestore index: slug (Ascending), status (Ascending)
-      const q = query(
-        articlesRef, 
-        where('slug', '==', articleSlug), 
-        where('status', '==', 'published')
-      );
-      const querySnapshot = await getDocs(q);
       
-      if (!querySnapshot.empty) {
-        const articleData = querySnapshot.docs[0].data() as Article;
-        articleData.id = querySnapshot.docs[0].id;
-        setArticle(articleData);
-        fetchRelatedArticles(articleData.category, articleSlug);
-      } else {
+      // First try querying with slug and status (requires composite index)
+      let querySnapshot;
+      try {
+        const q = query(
+          articlesRef, 
+          where('slug', '==', articleSlug), 
+          where('status', '==', 'published')
+        );
+        querySnapshot = await getDocs(q);
+      } catch (indexError: any) {
+        // If index error, fallback to query by slug only, then filter client-side
+        if (indexError?.code === 'failed-precondition') {
+          console.warn('Composite index not found. Falling back to slug-only query.');
+          const q = query(articlesRef, where('slug', '==', articleSlug));
+          querySnapshot = await getDocs(q);
+        } else {
+          throw indexError;
+        }
+      }
+      
+      if (!querySnapshot || querySnapshot.empty) {
         console.error('Article not found for slug:', articleSlug);
         router.push('/404');
+        return;
       }
+      
+      // Get all articles with this slug (in case of fallback query)
+      const articles = querySnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })) as Article[];
+      
+      // Filter by status if we used fallback query
+      const publishedArticles = articles.filter(article => article.status === 'published');
+      
+      if (publishedArticles.length === 0) {
+        console.error('No published article found for slug:', articleSlug);
+        router.push('/404');
+        return;
+      }
+      
+      const articleData = publishedArticles[0];
+      setArticle(articleData);
+      
+      // Validate category matches URL category
+      if (categorySlug && typeof categorySlug === 'string') {
+        const expectedCategorySlug = getCategorySlug(articleData.category);
+        if (categorySlug !== expectedCategorySlug) {
+          // Redirect to correct URL with proper category
+          const correctUrl = getArticleUrl(articleData);
+          router.replace(correctUrl);
+          return;
+        }
+      }
+      
+      fetchRelatedArticles(articleData.category, articleSlug);
     } catch (error: any) {
       console.error('Error fetching article:', error);
-      // Check if it's an index error
-      if (error?.code === 'failed-precondition') {
-        console.error('Firestore index required. Please create a composite index for: slug (Ascending), status (Ascending)');
-      }
+      console.error('Error details:', {
+        code: error?.code,
+        message: error?.message,
+        slug: articleSlug
+      });
       router.push('/404');
     } finally {
       setLoading(false);
