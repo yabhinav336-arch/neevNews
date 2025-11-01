@@ -5,11 +5,9 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Netlify automatically detects Next.js and handles SSR
-# If you need the plugin, install it: npm install --save-dev @netlify/plugin-nextjs
-# Then uncomment the line below:
-# [[plugins]]
-#   package = "@netlify/plugin-nextjs"
+# Enable Next.js plugin for proper SSR and 404 handling
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [context.production]
   command = "npm run build"
