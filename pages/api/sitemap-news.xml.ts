@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
+import { getArticleUrl } from '../../utils/data';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -39,8 +40,9 @@ ${recentArticles
       ? article.createdAt.toDate() 
       : new Date(article.createdAt);
     
+    const articleUrl = getArticleUrl(article);
     return `  <url>
-    <loc>https://neevnews.com/article/${article.slug || article.id}</loc>
+    <loc>https://neevnews.com${articleUrl}</loc>
     <news:news>
       <news:publication>
         <news:name>NeevNews</news:name>

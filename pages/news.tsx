@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../utils/firebase';
-import { categories } from '../utils/data';
+import { categories, getArticleUrl } from '../utils/data';
 import Layout from '../components/Layout/Layout';
 import { Clock, User, Filter, Grid, List, Search } from 'lucide-react';
 
@@ -262,7 +262,7 @@ const AllNewsPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredArticles.map((article) => (
                     <article key={article.id} className="group">
-                      <Link href={`/article/${article.slug || article.id}`}>
+                      <Link href={getArticleUrl(article)}>
                         <div className="card-hover overflow-hidden">
                           <div className="relative aspect-[16/10] overflow-hidden">
                             <Image
@@ -300,7 +300,7 @@ const AllNewsPage = () => {
                 <div className="space-y-6">
                   {filteredArticles.map((article) => (
                     <article key={article.id} className="group">
-                      <Link href={`/article/${article.slug || article.id}`}>
+                      <Link href={getArticleUrl(article)}>
                         <div className="card-hover overflow-hidden">
                           <div className="flex flex-col md:flex-row gap-6">
                             <div className="relative w-full md:w-80 aspect-[16/10] flex-shrink-0">

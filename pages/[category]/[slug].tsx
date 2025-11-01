@@ -5,15 +5,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
-import { categories, getArticleUrl } from '../../utils/data';
+import { categories } from '../../utils/data';
 import Layout from '../../components/Layout/Layout';
 import { 
   Clock, 
   User, 
-  Eye, 
   Heart, 
   Share2, 
-  BookOpen, 
   Calendar,
   ArrowLeft,
   Tag,
@@ -22,9 +20,7 @@ import {
   Twitter,
   Facebook,
   Linkedin,
-  Mail,
-  ChevronLeft,
-  ChevronRight
+  Mail
 } from 'lucide-react';
 
 interface Article {
@@ -47,9 +43,21 @@ interface Article {
   likes: number;
 }
 
+// Helper function to get category slug from category name
+const getCategorySlug = (categoryName: string): string => {
+  const category = categories.find(cat => cat.name === categoryName);
+  return category?.slug || categoryName.toLowerCase().replace(/\s+/g, '-');
+};
+
+// Helper function to get article URL
+const getArticleUrl = (article: Article): string => {
+  const categorySlug = getCategorySlug(article.category);
+  return `/${categorySlug}/${article.slug}`;
+};
+
 const ArticlePage = () => {
   const router = useRouter();
-  const { slug } = router.query;
+  const { category: categorySlug, slug: articleSlug } = router.query;
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,11 +66,11 @@ const ArticlePage = () => {
   const [readingTime, setReadingTime] = useState(0);
 
   useEffect(() => {
-    if (slug && typeof slug === 'string') {
-      fetchArticle(slug);
+    if (articleSlug && typeof articleSlug === 'string') {
+      fetchArticle(articleSlug);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+  }, [articleSlug]);
 
   useEffect(() => {
     if (article?.content) {
@@ -71,6 +79,18 @@ const ArticlePage = () => {
       setReadingTime(Math.ceil(wordCount / 200));
     }
   }, [article]);
+
+  // Validate category matches article category and redirect if needed
+  useEffect(() => {
+    if (article && categorySlug && typeof categorySlug === 'string') {
+      const expectedCategorySlug = getCategorySlug(article.category);
+      if (categorySlug !== expectedCategorySlug) {
+        // Redirect to correct URL
+        router.replace(getArticleUrl(article));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [article, categorySlug]);
 
   const fetchArticle = async (articleSlug: string) => {
     setLoading(true);
@@ -87,10 +107,8 @@ const ArticlePage = () => {
       if (!querySnapshot.empty) {
         const articleData = querySnapshot.docs[0].data() as Article;
         articleData.id = querySnapshot.docs[0].id;
-        // Redirect to new URL format: /{category}/{slug}
-        const newUrl = getArticleUrl(articleData);
-        router.replace(newUrl);
-        return;
+        setArticle(articleData);
+        fetchRelatedArticles(articleData.category, articleSlug);
       } else {
         console.error('Article not found for slug:', articleSlug);
         router.push('/404');
@@ -108,8 +126,25 @@ const ArticlePage = () => {
   };
 
   const fetchRelatedArticles = async (category: string, currentSlug: string) => {
-    // This function is no longer needed since we redirect immediately
-    return;
+    try {
+      const articlesRef = collection(db, 'news');
+      const q = query(
+        articlesRef, 
+        where('category', '==', category), 
+        where('status', '==', 'published'),
+        orderBy('createdAt', 'desc'),
+        limit(4)
+      );
+      const querySnapshot = await getDocs(q);
+      const articles = querySnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })) as Article[];
+      // Filter out current article
+      setRelatedArticles(articles.filter(article => article.slug !== currentSlug));
+    } catch (error) {
+      console.error('Error fetching related articles:', error);
+    }
   };
 
   const handleLike = () => {
@@ -187,12 +222,14 @@ const ArticlePage = () => {
     );
   }
 
+  const articleUrl = getArticleUrl(article);
+
   return (
     <Layout
       title={article.title}
       description={article.metaDescription || article.summary}
       keywords={article.keywords}
-      canonicalUrl={`https://neevnews.com/article/${article.slug}`}
+      canonicalUrl={`https://neevnews.com${articleUrl}`}
     >
       <Head>
         {/* Open Graph Meta Tags */}
@@ -200,6 +237,7 @@ const ArticlePage = () => {
         <meta property="og:description" content={article.metaDescription || article.summary} />
         <meta property="og:image" content={article.imageUrl} />
         <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://neevnews.com${articleUrl}`} />
         <meta property="article:author" content={article.author} />
         <meta property="article:published_time" content={article.createdAt?.toDate?.()?.toISOString() || ''} />
         <meta property="article:section" content={article.category} />
@@ -277,7 +315,7 @@ const ArticlePage = () => {
               },
               mainEntityOfPage: {
                 '@type': 'WebPage',
-                '@id': `https://neevnews.com/article/${article.slug}`,
+                '@id': `https://neevnews.com${articleUrl}`,
               },
               articleSection: article.category,
               keywords: article.keywords || article.tags?.join(', ') || article.category,
@@ -307,13 +345,13 @@ const ArticlePage = () => {
                   '@type': 'ListItem',
                   position: 2,
                   name: article.category,
-                  item: `https://neevnews.com/category/${article.category.toLowerCase()}`,
+                  item: `https://neevnews.com/category/${getCategorySlug(article.category)}`,
                 },
                 {
                   '@type': 'ListItem',
                   position: 3,
                   name: article.title,
-                  item: `https://neevnews.com/article/${article.slug}`,
+                  item: `https://neevnews.com${articleUrl}`,
                 },
               ],
             })
@@ -539,7 +577,7 @@ const ArticlePage = () => {
                     {relatedArticles.slice(0, 3).map((relatedArticle) => (
                       <Link
                         key={relatedArticle.id}
-                        href={`/article/${relatedArticle.slug}`}
+                        href={getArticleUrl(relatedArticle)}
                         className="block group"
                       >
                         <div className="flex space-x-3">
@@ -594,3 +632,4 @@ const ArticlePage = () => {
 };
 
 export default ArticlePage;
+

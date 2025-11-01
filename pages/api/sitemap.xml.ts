@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
-import { categories } from '../../utils/data';
+import { categories, getArticleUrl } from '../../utils/data';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -57,8 +57,9 @@ ${articles
       ? article.createdAt.toDate() 
       : new Date();
 
+    const articleUrl = getArticleUrl(article);
     return `  <url>
-    <loc>${baseUrl}/article/${article.slug || article.id}</loc>
+    <loc>${baseUrl}${articleUrl}</loc>
     <lastmod>${lastmod.toISOString()}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>

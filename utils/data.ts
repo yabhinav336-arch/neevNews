@@ -147,3 +147,15 @@ export const popularArticles = [
     views: 8700
   }
 ];
+
+// Helper function to get category slug from category name
+export const getCategorySlug = (categoryName: string): string => {
+  const category = categories.find(cat => cat.name === categoryName);
+  return category?.slug || categoryName.toLowerCase().replace(/\s+/g, '-');
+};
+
+// Helper function to get article URL path
+export const getArticleUrl = (article: { category: string; slug: string }): string => {
+  const categorySlug = getCategorySlug(article.category);
+  return `/${categorySlug}/${article.slug}`;
+};

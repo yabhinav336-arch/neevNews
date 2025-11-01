@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../utils/firebase';
-import { categories, trendingTopics } from '../utils/data';
+import { categories, trendingTopics, getArticleUrl } from '../utils/data';
 import { subscribeToNewsletter } from '../services/newsletter';
 import Layout from '@/components/Layout/Layout';
 import { 
@@ -244,7 +244,7 @@ const HomePage: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   {/* Main Featured Article */}
                   <div className="lg:col-span-2">
-                    <Link href={`/article/${featuredArticles[0].slug || featuredArticles[0].id}`} className="group">
+                    <Link href={getArticleUrl(featuredArticles[0])} className="group">
                       <div className="relative aspect-[16/9] lg:aspect-[21/9] overflow-hidden rounded-2xl">
                         <Image
                           src={featuredArticles[0].imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'}
@@ -304,7 +304,7 @@ const HomePage: React.FC = () => {
                         {trendingArticles.map((article, index) => (
                           <Link
                             key={article.id}
-                            href={`/article/${article.slug || article.id}`}
+                            href={getArticleUrl(article)}
                             className="group block"
                           >
                             <div className="flex space-x-3">
@@ -387,7 +387,7 @@ const HomePage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {latestNews.map((article) => (
                 <article key={article.id} className="group">
-                  <Link href={`/article/${article.slug || article.id}`}>
+                  <Link href={getArticleUrl(article)}>
                     <div className="card-hover overflow-hidden">
                       <div className="relative aspect-[16/10] overflow-hidden">
                         <Image
@@ -447,7 +447,7 @@ const HomePage: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {articles.map((article) => (
                       <article key={article.id} className="group">
-                        <Link href={`/article/${article.slug || article.id}`}>
+                        <Link href={getArticleUrl(article)}>
                           <div className="card-hover overflow-hidden">
                             <div className="relative aspect-[16/10] overflow-hidden">
                               <Image

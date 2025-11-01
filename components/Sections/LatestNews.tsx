@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Clock, User, ArrowRight, TrendingUp } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
+import { getArticleUrl } from '@/utils/data';
 import { subscribeToNewsletter } from '../../services/newsletter';
 
 interface Article {
@@ -109,7 +110,7 @@ const LatestNews: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {articles.map((article, index) => (
                 <article key={article.id} className="card-hover group">
-                  <Link href={`/article/${article.slug || article.id}`}>
+                  <Link href={getArticleUrl(article)}>
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <Image
                         src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'}
@@ -216,7 +217,7 @@ const LatestNews: React.FC = () => {
                 {articles.slice(0, 3).map((article, index) => (
                   <Link
                     key={article.id}
-                    href={`/article/${article.slug || article.id}`}
+                    href={getArticleUrl(article)}
                     className="group block"
                   >
                     <div className="flex items-start space-x-3">
