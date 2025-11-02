@@ -66,40 +66,71 @@ const HomePage: React.FC = () => {
 
   const fetchArticles = async () => {
     try {
-      // Fetch all articles from Firebase
-      const querySnapshot = await getDocs(collection(db, 'news'));
-      const allArticles = querySnapshot.docs.map(doc => ({ 
+      // OPTIMIZATION 1: Check local cache first (reduces Firestore reads)
+      const { CacheManager, CACHE_KEYS } = await import('../utils/cacheManager');
+      const cachedArticles = CacheManager.get<Article[]>(CACHE_KEYS.ARTICLES);
+      
+      if (cachedArticles && cachedArticles.length > 0) {
+        console.log('📦 Using cached articles:', cachedArticles.length);
+        processArticles(cachedArticles);
+        return;
+      }
+
+      console.log('🔄 Fetching from Firestore...');
+
+      // OPTIMIZATION 2: Use pagination with limit() instead of fetching all
+      // Only fetch 20 most recent articles for homepage
+      const articlesRef = collection(db, 'news');
+      const q = query(
+        articlesRef,
+        where('status', '==', 'published'),
+        orderBy('createdAt', 'desc'),
+        limit(20) // ⚡ HUGE SAVINGS: 20 reads instead of 100+
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const articles = querySnapshot.docs.map(doc => ({ 
         ...doc.data(), 
         id: doc.id 
       })) as Article[];
 
-      console.log('Fetched articles from Firebase:', allArticles.length);
+      console.log('✅ Fetched from Firestore:', articles.length, 'reads');
 
-      // Filter published articles
-      const publishedArticles = allArticles.filter(article => article.status === 'published');
-      
-      // Sort by date (newest first)
-      const sortedArticles = publishedArticles.sort((a, b) => {
-        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-        return dateB.getTime() - dateA.getTime();
-      });
+      // OPTIMIZATION 3: Cache the results for 5 minutes
+      CacheManager.set(CACHE_KEYS.ARTICLES, articles);
+      CacheManager.setLastSync();
 
-      setFeaturedArticles(sortedArticles.filter(article => article.featured).slice(0, 1));
-      setLatestNews(sortedArticles.slice(0, 12));
-      setTrendingArticles(sortedArticles.slice(0, 3));
-
-      // Group by category
-      const categoryGroups: { [key: string]: Article[] } = {};
-      categories.slice(0, 4).forEach(cat => {
-        categoryGroups[cat.name] = sortedArticles
-          .filter(article => article.category === cat.name)
-          .slice(0, 4);
-      });
-      setCategoryNews(categoryGroups);
+      processArticles(articles);
     } catch (error) {
       console.error('Error fetching articles:', error);
     }
+  };
+
+  const processArticles = (articles: Article[]) => {
+    // Sort by date (newest first) - client-side sorting is free
+    const sortedArticles = [...articles].sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    // Featured article (if any)
+    setFeaturedArticles(sortedArticles.filter(article => article.featured).slice(0, 1));
+    
+    // Latest news (up to 12)
+    setLatestNews(sortedArticles.slice(0, 12));
+    
+    // Trending (top 3)
+    setTrendingArticles(sortedArticles.slice(0, 3));
+
+    // Group by category (up to 4 per category)
+    const categoryGroups: { [key: string]: Article[] } = {};
+    categories.slice(0, 4).forEach(cat => {
+      categoryGroups[cat.name] = sortedArticles
+        .filter(article => article.category === cat.name)
+        .slice(0, 4);
+    });
+    setCategoryNews(categoryGroups);
   };
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
