@@ -47,6 +47,19 @@ const HomePage: React.FC = () => {
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState('');
 
+  // Structured data for homepage
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Neev News',
+    url: 'https://neevnews.app',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://neevnews.app/search?q={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   useEffect(() => {
     fetchArticles();
   }, []);
@@ -140,23 +153,38 @@ const HomePage: React.FC = () => {
     title: 'Neev News - Breaking News, Latest Updates & Global Headlines',
     description: 'Stay informed with Neev News - your trusted source for breaking news, global headlines, and in-depth analysis. Covering politics, technology, business, science, and world events 24/7.',
     keywords: 'breaking news, latest news, global headlines, world news, politics, technology, business, science, health, sports, entertainment, journalism, live news, Neev News',
+    canonical: 'https://neevnews.app',
     openGraph: {
+      url: 'https://neevnews.app',
       title: 'Neev News - Breaking News & Global Headlines',
       description: 'Your trusted source for breaking news, global headlines, and in-depth analysis from around the world.',
       images: [
         {
-          url: 'https://neevnews.com/og-home.jpg',
+          url: 'https://neevnews.app/logo.png',
           width: 1200,
           height: 630,
-          alt: 'NeevNews Homepage',
+          alt: 'Neev News Logo',
         },
       ],
+      site_name: 'Neev News',
+    },
+    twitter: {
+      handle: '@neevnews',
+      site: '@neevnews',
+      cardType: 'summary_large_image',
     },
   };
 
   return (
     <>
       <NextSeo {...seoData} />
+      
+      {/* Structured Data for Website */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      
       <Layout>
         {/* Structured Data */}
         <script
@@ -166,11 +194,11 @@ const HomePage: React.FC = () => {
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               name: 'Neev News',
-              url: 'https://neevnews.com',
+              url: 'https://neevnews.app',
               description: 'Global news and articles platform providing trusted journalism and in-depth analysis.',
               potentialAction: {
                 '@type': 'SearchAction',
-                target: 'https://neevnews.com/search?q={search_term_string}',
+                target: 'https://neevnews.app/search?q={search_term_string}',
                 'query-input': 'required name=search_term_string',
               },
               publisher: {
@@ -178,7 +206,7 @@ const HomePage: React.FC = () => {
                 name: 'Neev News',
                 logo: {
                   '@type': 'ImageObject',
-                  url: 'https://neevnews.com/logo.png',
+                  url: 'https://neevnews.app/logo.png',
                 },
               },
             }),

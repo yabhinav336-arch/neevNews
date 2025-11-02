@@ -301,21 +301,63 @@ const ArticlePage = () => {
   }
 
   const articleUrl = getArticleUrl(article);
+  
+  // Structured data for the article (NewsArticle schema for Google)
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: article.title,
+    description: article.metaDescription || article.summary,
+    image: article.imageUrl,
+    datePublished: article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+    dateModified: article.updatedAt?.toDate?.()?.toISOString() || article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+    author: {
+      '@type': 'Person',
+      name: article.author || 'Neev News',
+      url: 'https://neevnews.app/about',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Neev News',
+      url: 'https://neevnews.app',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://neevnews.app/logo.png',
+        width: 600,
+        height: 60,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://neevnews.app${articleUrl}`,
+    },
+    articleSection: article.category,
+    keywords: article.keywords || article.tags?.join(', ') || '',
+    articleBody: article.content,
+    wordCount: article.content?.split(' ').length || 0,
+    inLanguage: 'en-US',
+  };
 
   return (
     <Layout
       title={article.title}
       description={article.metaDescription || article.summary}
       keywords={article.keywords}
-      canonicalUrl={`https://neevnews.com${articleUrl}`}
+      canonicalUrl={`https://neevnews.app${articleUrl}`}
     >
       <Head>
+        {/* Structured Data for NewsArticle */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
+        
         {/* Open Graph Meta Tags */}
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={article.metaDescription || article.summary} />
         <meta property="og:image" content={article.imageUrl} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://neevnews.com${articleUrl}`} />
+        <meta property="og:url" content={`https://neevnews.app${articleUrl}`} />
         <meta property="article:author" content={article.author} />
         <meta property="article:published_time" content={article.createdAt?.toDate?.()?.toISOString() || ''} />
         <meta property="article:section" content={article.category} />

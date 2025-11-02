@@ -40,8 +40,8 @@ export default function Document() {
               '@context': 'https://schema.org',
               '@type': 'NewsMediaOrganization',
               name: 'Neev News',
-              url: 'https://neevnews.com',
-              logo: 'https://neevnews.com/logo.png',
+              url: 'https://neevnews.app',
+              logo: 'https://neevnews.app/logo.png',
               description: 'Global news and articles platform providing trusted journalism and in-depth analysis.',
               sameAs: [
                 'https://twitter.com/neevnews',
