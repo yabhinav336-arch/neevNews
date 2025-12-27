@@ -148,7 +148,7 @@ class AnalyticsOptimizer {
     // Aggregate data
     const uniqueArticles = new Set(this.articleViews.map(v => v.articleId)).size;
     const totalTime = this.articleViews.reduce((sum, v) => sum + v.timeSpent, 0);
-    const categories = [...new Set(this.articleViews.map(v => v.category))];
+    const categories = Array.from(new Set(this.articleViews.map(v => v.category)));
 
     // Log single aggregated event instead of multiple
     console.log('📊 Batched Analytics Event:', {
