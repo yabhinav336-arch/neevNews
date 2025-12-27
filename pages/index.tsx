@@ -16,7 +16,8 @@ import {
   ChevronRight,
   Flame,
   Globe,
-  Zap
+  Zap,
+  Pin
 } from 'lucide-react';
 
 interface Article {
@@ -36,12 +37,20 @@ interface Article {
   slug: string;
   views: number;
   likes: number;
+  // CMS fields
+  isBreaking?: boolean;
+  isTrending?: boolean;
+  isPinned?: boolean;
+  homepagePosition?: number;
+  publishedAt?: any;
 }
 
 const HomePage: React.FC = () => {
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
   const [latestNews, setLatestNews] = useState<Article[]>([]);
   const [trendingArticles, setTrendingArticles] = useState<Article[]>([]);
+  const [breakingNews, setBreakingNews] = useState<Article[]>([]);
+  const [pinnedArticles, setPinnedArticles] = useState<Article[]>([]);
   const [categoryNews, setCategoryNews] = useState<{ [key: string]: Article[] }>({});
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -72,9 +81,26 @@ const HomePage: React.FC = () => {
         return dateB.getTime() - dateA.getTime();
       });
 
-      setFeaturedArticles(sortedArticles.filter(article => article.featured).slice(0, 1));
-      setLatestNews(sortedArticles.slice(0, 12));
-      setTrendingArticles(sortedArticles.slice(0, 3));
+      // Get breaking news articles (marked as breaking in CMS)
+      const breaking = sortedArticles.filter(article => article.isBreaking);
+      setBreakingNews(breaking);
+
+      // Get featured articles (marked as featured in CMS)
+      const featured = sortedArticles.filter(article => article.featured);
+      setFeaturedArticles(featured.slice(0, 3));
+
+      // Get trending articles (marked as trending in CMS, fallback to latest if none)
+      const trending = sortedArticles.filter(article => article.isTrending);
+      setTrendingArticles(trending.length > 0 ? trending.slice(0, 5) : sortedArticles.slice(0, 5));
+
+      // Get pinned articles (marked as pinned in CMS)
+      const pinned = sortedArticles.filter(article => article.isPinned);
+      setPinnedArticles(pinned);
+
+      // For latest news, show pinned first, then rest sorted by date
+      const unpinnedArticles = sortedArticles.filter(article => !article.isPinned);
+      const orderedLatest = [...pinned, ...unpinnedArticles];
+      setLatestNews(orderedLatest.slice(0, 12));
 
       // Group by category
       const categoryGroups: { [key: string]: Article[] } = {};
@@ -186,6 +212,36 @@ const HomePage: React.FC = () => {
         />
 
         <div className="bg-white dark:bg-secondary-950">
+          {/* Breaking News Ticker */}
+          {breakingNews.length > 0 && (
+            <div className="bg-gradient-to-r from-red-600 to-red-700 text-white overflow-hidden">
+              <div className="container-custom py-2">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2 bg-white/20 px-3 py-1 rounded-full flex-shrink-0">
+                    <Zap size={14} className="fill-current animate-pulse" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Breaking</span>
+                  </div>
+                  <div className="overflow-hidden flex-1">
+                    <div className="animate-marquee whitespace-nowrap">
+                      {breakingNews.map((article, index) => (
+                        <Link
+                          key={article.id}
+                          href={getArticleUrl(article)}
+                          className="inline-block hover:underline mr-16"
+                        >
+                          <span className="font-medium">{article.title}</span>
+                          {index < breakingNews.length - 1 && (
+                            <span className="mx-8 text-white/50">|</span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Empty State */}
           {latestNews.length === 0 && (
             <section className="container-custom py-20">
@@ -194,44 +250,40 @@ const HomePage: React.FC = () => {
                   <span className="text-white text-4xl">📰</span>
                 </div>
                 <h2 className="text-3xl font-bold text-secondary-900 dark:text-white mb-4 font-serif">
-                  No Articles Yet
+                  Coming Soon
                 </h2>
                 <p className="text-lg text-secondary-600 dark:text-secondary-400 mb-8">
-                  Start creating amazing news articles using the admin panel to see them appear here.
+                  We're working on bringing you the latest news and stories. Stay tuned for updates!
                 </p>
                 <Link
-                  href="/admin"
+                  href="/newsletter"
                   className="inline-flex items-center space-x-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200"
                 >
-                  <span>Create Your First Article</span>
+                  <span>Subscribe to Newsletter</span>
                   <ArrowRight size={20} />
                 </Link>
                 <div className="mt-12 p-6 bg-secondary-50 dark:bg-secondary-900 rounded-xl">
                   <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-3">
-                    Quick Start Guide:
+                    What to Expect:
                   </h3>
-                  <ol className="text-left space-y-2 text-secondary-700 dark:text-secondary-300">
+                  <ul className="text-left space-y-2 text-secondary-700 dark:text-secondary-300">
                     <li className="flex items-start space-x-2">
-                      <span className="font-bold text-primary-600">1.</span>
-                      <span>Go to <Link href="/admin" className="text-primary-600 hover:underline">/admin</Link> page</span>
+                      <span className="text-primary-600">✓</span>
+                      <span>Breaking news and latest updates</span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <span className="font-bold text-primary-600">2.</span>
-                      <span>Fill in article title, summary, and content</span>
+                      <span className="text-primary-600">✓</span>
+                      <span>In-depth analysis on science and technology</span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <span className="font-bold text-primary-600">3.</span>
-                      <span>Add an image URL from Unsplash or your server</span>
+                      <span className="text-primary-600">✓</span>
+                      <span>Health, politics, and world affairs coverage</span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <span className="font-bold text-primary-600">4.</span>
-                      <span>Select category, author, and set status to "Published"</span>
+                      <span className="text-primary-600">✓</span>
+                      <span>Expert opinions and investigative journalism</span>
                     </li>
-                    <li className="flex items-start space-x-2">
-                      <span className="font-bold text-primary-600">5.</span>
-                      <span>Click "Create Article" and watch it appear here!</span>
-                    </li>
-                  </ol>
+                  </ul>
                 </div>
               </div>
             </section>
@@ -255,11 +307,17 @@ const HomePage: React.FC = () => {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
                         
-                        {/* Breaking Badge */}
+                        {/* Badges */}
                         <div className="absolute top-6 left-6 flex items-center space-x-2">
-                          <span className="px-4 py-1.5 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse flex items-center space-x-1">
-                            <Zap size={12} className="fill-current" />
-                            <span>BREAKING</span>
+                          {featuredArticles[0].isBreaking && (
+                            <span className="px-4 py-1.5 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse flex items-center space-x-1">
+                              <Zap size={12} className="fill-current" />
+                              <span>BREAKING</span>
+                            </span>
+                          )}
+                          <span className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold rounded-full flex items-center space-x-1">
+                            <Flame size={12} className="fill-current" />
+                            <span>FEATURED</span>
                           </span>
                           <span className={`px-3 py-1.5 text-white text-xs font-medium rounded-full ${getCategoryColor(featuredArticles[0].category)}`}>
                             {featuredArticles[0].category}
@@ -288,6 +346,33 @@ const HomePage: React.FC = () => {
                         </div>
                       </div>
                     </Link>
+
+                    {/* Secondary Featured Articles */}
+                    {featuredArticles.length > 1 && (
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        {featuredArticles.slice(1, 3).map((article) => (
+                          <Link key={article.id} href={getArticleUrl(article)} className="group">
+                            <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
+                              <Image
+                                src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'}
+                                alt={article.title}
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                              <div className="absolute bottom-0 left-0 right-0 p-4">
+                                <span className={`inline-block px-2 py-0.5 text-white text-xs font-medium rounded mb-2 ${getCategoryColor(article.category)}`}>
+                                  {article.category}
+                                </span>
+                                <h3 className="text-white font-semibold line-clamp-2 group-hover:text-primary-300 transition-colors duration-200">
+                                  {article.title}
+                                </h3>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Sidebar - Trending & Newsletter */}
@@ -295,7 +380,7 @@ const HomePage: React.FC = () => {
                     {/* Trending Now */}
                     <div className="card p-6">
                       <div className="flex items-center space-x-2 mb-4">
-                        <Flame size={20} className="text-red-600" />
+                        <TrendingUp size={20} className="text-orange-600" />
                         <h3 className="text-lg font-bold text-secondary-900 dark:text-white">
                           Trending Now
                         </h3>
@@ -316,6 +401,8 @@ const HomePage: React.FC = () => {
                                   {article.title}
                                 </h4>
                                 <div className="flex items-center space-x-2 mt-1 text-xs text-secondary-500">
+                                  <span>{article.category}</span>
+                                  <span>•</span>
                                   <span>{formatTimeAgo(article.createdAt)}</span>
                                 </div>
                               </div>
@@ -396,7 +483,19 @@ const HomePage: React.FC = () => {
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
-                        <div className="absolute top-3 left-3">
+                        <div className="absolute top-3 left-3 flex items-center space-x-2">
+                          {article.isPinned && (
+                            <span className="px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded flex items-center space-x-1">
+                              <Pin size={10} />
+                              <span>Pinned</span>
+                            </span>
+                          )}
+                          {article.isBreaking && (
+                            <span className="px-2 py-1 bg-red-600 text-white text-xs font-medium rounded flex items-center space-x-1">
+                              <Zap size={10} className="fill-current" />
+                              <span>Breaking</span>
+                            </span>
+                          )}
                           <span className={`px-2 py-1 text-white text-xs font-medium rounded ${getCategoryColor(article.category)}`}>
                             {article.category}
                           </span>
@@ -414,6 +513,15 @@ const HomePage: React.FC = () => {
                             <Clock size={12} />
                             <span>{formatTimeAgo(article.createdAt)}</span>
                           </span>
+                          {article.isTrending && (
+                            <>
+                              <span className="mx-2">•</span>
+                              <span className="flex items-center space-x-1 text-orange-600">
+                                <TrendingUp size={12} />
+                                <span>Trending</span>
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -456,6 +564,14 @@ const HomePage: React.FC = () => {
                                 fill
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                               />
+                              {article.isTrending && (
+                                <div className="absolute top-3 left-3">
+                                  <span className="px-2 py-1 bg-orange-600 text-white text-xs font-medium rounded flex items-center space-x-1">
+                                    <TrendingUp size={10} />
+                                    <span>Trending</span>
+                                  </span>
+                                </div>
+                              )}
                             </div>
                             <div className="p-4">
                               <h3 className="text-sm font-semibold text-secondary-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
