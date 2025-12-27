@@ -1,73 +1,21 @@
-# robots.txt for NeevNews - Optimized for News Indexing
-
-# Allow all major search engines and AI crawlers
+# *
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /api/
+Disallow: /api
 
-# Google Search
+# Googlebot
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 0
 
-# Google News - Priority indexing
+# Googlebot-News
 User-agent: Googlebot-News
 Allow: /
-Crawl-delay: 0
 
-# Google Images
-User-agent: Googlebot-Image
-Allow: /
-
-# Bing and Microsoft
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 0
-
-# ChatGPT / OpenAI
-User-agent: GPTBot
-Allow: /
-
-# ChatGPT-User (for browsing)
-User-agent: ChatGPT-User
-Allow: /
-
-# Google Extended (for AI training)
-User-agent: Google-Extended
-Allow: /
-
-# Perplexity AI
-User-agent: PerplexityBot
-Allow: /
-
-# Anthropic Claude
-User-agent: anthropic-ai
-Allow: /
-User-agent: Claude-Web
-Allow: /
-
-# Other AI crawlers
-User-agent: CCBot
-Allow: /
-
-User-agent: cohere-ai
-Allow: /
-
-# Social Media Crawlers
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: LinkedInBot
-Allow: /
+# Host
+Host: https://neevnews.app/
 
 # Sitemaps
 Sitemap: https://neevnews.app/sitemap.xml
 Sitemap: https://neevnews.app/sitemap-news.xml
-
-# Host
-Host: https://neevnews.app
-
+Sitemap: https://neevnews.app/server-sitemap.xml
