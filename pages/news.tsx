@@ -248,11 +248,11 @@ const AllNewsPage = () => {
                 No articles found
               </h2>
               <p className="text-secondary-600 dark:text-secondary-400 mb-6">
-                {searchQuery ? 'Try adjusting your search or filters' : 'Create your first article to get started'}
+                {searchQuery ? 'Try adjusting your search or filters' : 'We\'re working on bringing you more articles. Check back soon!'}
               </p>
-              {!searchQuery && (
-                <Link href="/admin" className="btn-primary">
-                  Create Article
+              {searchQuery && (
+                <Link href="/news" className="btn-primary">
+                  View All Articles
                 </Link>
               )}
             </div>

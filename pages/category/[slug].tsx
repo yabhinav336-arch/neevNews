@@ -31,6 +31,8 @@ const CategoryPage = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
   const [categoryData, setCategoryData] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const articlesPerPage = 12;
 
   useEffect(() => {
     if (slug) {
@@ -170,8 +172,11 @@ const CategoryPage = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <button
-                  onClick={() => setSortBy('latest')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 ${
+                  onClick={() => {
+                    setSortBy('latest');
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 min-h-[44px] ${
                     sortBy === 'latest'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
@@ -180,8 +185,11 @@ const CategoryPage = () => {
                   Latest
                 </button>
                 <button
-                  onClick={() => setSortBy('popular')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 ${
+                  onClick={() => {
+                    setSortBy('popular');
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 min-h-[44px] ${
                     sortBy === 'popular'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
@@ -194,21 +202,23 @@ const CategoryPage = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors duration-200 ${
+                  className={`p-2 rounded-lg transition-colors duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     viewMode === 'grid'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
                   }`}
+                  aria-label="Grid view"
                 >
                   <Grid size={18} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors duration-200 ${
+                  className={`p-2 rounded-lg transition-colors duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     viewMode === 'list'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
                   }`}
+                  aria-label="List view"
                 >
                   <List size={18} />
                 </button>
@@ -230,15 +240,15 @@ const CategoryPage = () => {
               <p className="text-secondary-600 dark:text-secondary-400 mb-6">
                 Check back soon for the latest {categoryData.name.toLowerCase()} news and updates.
               </p>
-              <Link href="/admin" className="btn-primary">
-                Create Article
+              <Link href="/newsletter" className="btn-primary">
+                Subscribe to Newsletter
               </Link>
             </div>
           ) : (
             <>
               {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {articles.map((article) => (
+                  {articles.slice((currentPage - 1) * articlesPerPage, currentPage * articlesPerPage).map((article) => (
                     <article key={article.id} className="group">
                       <Link href={getArticleUrl(article)}>
                         <div className="card-hover overflow-hidden">
@@ -271,7 +281,7 @@ const CategoryPage = () => {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {articles.map((article) => (
+                  {articles.slice((currentPage - 1) * articlesPerPage, currentPage * articlesPerPage).map((article) => (
                     <article key={article.id} className="group">
                       <Link href={getArticleUrl(article)}>
                         <div className="card-hover overflow-hidden">
@@ -308,6 +318,58 @@ const CategoryPage = () => {
                       </Link>
                     </article>
                   ))}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {articles.length > articlesPerPage && (
+                <div className="mt-12 flex items-center justify-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-lg bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 min-h-[44px] min-w-[44px]"
+                    aria-label="Previous page"
+                  >
+                    ←
+                  </button>
+                  {Array.from({ length: Math.ceil(articles.length / articlesPerPage) }, (_, i) => i + 1)
+                    .filter(page => {
+                      // Show first page, last page, current page, and pages around current
+                      return page === 1 || 
+                             page === Math.ceil(articles.length / articlesPerPage) ||
+                             (page >= currentPage - 1 && page <= currentPage + 1);
+                    })
+                    .map((page, index, array) => {
+                      // Add ellipsis if there's a gap
+                      const showEllipsisBefore = index > 0 && page - array[index - 1] > 1;
+                      return (
+                        <React.Fragment key={page}>
+                          {showEllipsisBefore && (
+                            <span className="px-2 text-secondary-500">...</span>
+                          )}
+                          <button
+                            onClick={() => setCurrentPage(page)}
+                            className={`px-4 py-2 rounded-lg min-h-[44px] min-w-[44px] transition-colors duration-200 ${
+                              currentPage === page
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
+                            }`}
+                            aria-label={`Page ${page}`}
+                            aria-current={currentPage === page ? 'page' : undefined}
+                          >
+                            {page}
+                          </button>
+                        </React.Fragment>
+                      );
+                    })}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(Math.ceil(articles.length / articlesPerPage), prev + 1))}
+                    disabled={currentPage === Math.ceil(articles.length / articlesPerPage)}
+                    className="px-4 py-2 rounded-lg bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 min-h-[44px] min-w-[44px]"
+                    aria-label="Next page"
+                  >
+                    →
+                  </button>
                 </div>
               )}
             </>

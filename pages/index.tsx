@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { categories, trendingTopics, getArticleUrl } from '../utils/data';
+import { getImageUrl } from '../utils/images';
 import { subscribeToNewsletter } from '../services/newsletter';
 import Layout from '@/components/Layout/Layout';
 import { 
@@ -242,26 +243,34 @@ const HomePage: React.FC = () => {
             </div>
           )}
 
-          {/* Empty State */}
-          {latestNews.length === 0 && (
+          {/* Empty State - Only show if no content at all */}
+          {latestNews.length === 0 && featuredArticles.length === 0 && breakingNews.length === 0 && (
             <section className="container-custom py-20">
               <div className="max-w-2xl mx-auto text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-white text-4xl">📰</span>
                 </div>
                 <h2 className="text-3xl font-bold text-secondary-900 dark:text-white mb-4 font-serif">
-                  Coming Soon
+                  Welcome to Neev News
                 </h2>
                 <p className="text-lg text-secondary-600 dark:text-secondary-400 mb-8">
-                  We're working on bringing you the latest news and stories. Stay tuned for updates!
+                  We're preparing to bring you the latest news and stories. Stay tuned for updates!
                 </p>
-                <Link
-                  href="/newsletter"
-                  className="inline-flex items-center space-x-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200"
-                >
-                  <span>Subscribe to Newsletter</span>
-                  <ArrowRight size={20} />
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    href="/newsletter"
+                    className="inline-flex items-center justify-center space-x-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200 min-h-[48px]"
+                  >
+                    <span>Subscribe to Newsletter</span>
+                    <ArrowRight size={20} />
+                  </Link>
+                  <Link
+                    href="/about"
+                    className="inline-flex items-center justify-center space-x-2 px-8 py-4 bg-secondary-200 dark:bg-secondary-800 hover:bg-secondary-300 dark:hover:bg-secondary-700 text-secondary-900 dark:text-white font-semibold rounded-lg transition-colors duration-200 min-h-[48px]"
+                  >
+                    <span>Learn More</span>
+                  </Link>
+                </div>
                 <div className="mt-12 p-6 bg-secondary-50 dark:bg-secondary-900 rounded-xl">
                   <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-3">
                     What to Expect:
@@ -299,11 +308,12 @@ const HomePage: React.FC = () => {
                     <Link href={getArticleUrl(featuredArticles[0])} className="group">
                       <div className="relative aspect-[16/9] lg:aspect-[21/9] overflow-hidden rounded-2xl">
                         <Image
-                          src={featuredArticles[0].imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'}
+                          src={getImageUrl(featuredArticles[0].imageUrl)}
                           alt={featuredArticles[0].title}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
                           priority
+                          sizes="(max-width: 768px) 100vw, 66vw"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
                         
@@ -354,10 +364,12 @@ const HomePage: React.FC = () => {
                           <Link key={article.id} href={getArticleUrl(article)} className="group">
                             <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
                               <Image
-                                src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'}
+                                src={getImageUrl(article.imageUrl)}
                                 alt={article.title}
                                 fill
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                loading="lazy"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                               <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -478,10 +490,12 @@ const HomePage: React.FC = () => {
                     <div className="card-hover overflow-hidden">
                       <div className="relative aspect-[16/10] overflow-hidden">
                         <Image
-                          src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'}
+                          src={getImageUrl(article.imageUrl)}
                           alt={article.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                          loading="lazy"
                         />
                         <div className="absolute top-3 left-3 flex items-center space-x-2">
                           {article.isPinned && (
@@ -559,10 +573,12 @@ const HomePage: React.FC = () => {
                           <div className="card-hover overflow-hidden">
                             <div className="relative aspect-[16/10] overflow-hidden">
                               <Image
-                                src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'}
+                                src={getImageUrl(article.imageUrl)}
                                 alt={article.title}
                                 fill
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                loading="lazy"
                               />
                               {article.isTrending && (
                                 <div className="absolute top-3 left-3">

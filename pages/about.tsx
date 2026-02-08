@@ -245,6 +245,67 @@ const AboutPage = () => {
               </div>
             </section>
 
+            {/* Editorial Policy */}
+            <section className="mb-20">
+              <div className="card p-8 bg-gradient-to-br from-secondary-50 to-white dark:from-secondary-900 dark:to-secondary-950">
+                <div className="flex items-center mb-6">
+                  <div className="w-1 h-12 bg-gradient-to-b from-primary-500 to-accent-500 rounded-full mr-4"></div>
+                  <h2 className="text-4xl font-bold text-secondary-900 dark:text-white font-serif">
+                    Editorial Policy
+                  </h2>
+                </div>
+                
+                <div className="prose prose-lg dark:prose-invert max-w-none">
+                  <div className="space-y-6 text-secondary-700 dark:text-secondary-300">
+                    <div>
+                      <h3 className="text-2xl font-semibold text-secondary-900 dark:text-white mb-3">Accuracy & Fact-Checking</h3>
+                      <p className="leading-relaxed">
+                        We are committed to accuracy in all our reporting. Every article undergoes a rigorous fact-checking process 
+                        before publication. We verify information from multiple credible sources and clearly distinguish between 
+                        confirmed facts, analysis, and opinion pieces.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-2xl font-semibold text-secondary-900 dark:text-white mb-3">Independence & Impartiality</h3>
+                      <p className="leading-relaxed">
+                        NeevNews maintains editorial independence. Our reporting is not influenced by advertisers, sponsors, or 
+                        external parties. We present multiple perspectives on complex issues and clearly label opinion pieces, 
+                        editorials, and sponsored content.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-2xl font-semibold text-secondary-900 dark:text-white mb-3">Transparency</h3>
+                      <p className="leading-relaxed">
+                        We believe in transparency with our readers. When we make errors, we correct them promptly and clearly. 
+                        We disclose any potential conflicts of interest and explain our sources and methodology when relevant. 
+                        Our editorial decisions are guided by journalistic principles, not commercial interests.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-2xl font-semibold text-secondary-900 dark:text-white mb-3">Diversity & Inclusion</h3>
+                      <p className="leading-relaxed">
+                        We strive to represent diverse voices and perspectives in our coverage. Our team works to ensure that 
+                        stories from underrepresented communities are told with accuracy, respect, and depth. We are committed 
+                        to inclusive reporting that reflects the complexity of our global community.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-2xl font-semibold text-secondary-900 dark:text-white mb-3">Corrections Policy</h3>
+                      <p className="leading-relaxed">
+                        If we discover an error in our reporting, we will correct it promptly and transparently. Corrections 
+                        are clearly marked and dated. We encourage readers to report any inaccuracies they find by contacting 
+                        us at <a href="mailto:abhinavvoicebox@gmail.com" className="text-primary-600 dark:text-primary-400 hover:underline">abhinavvoicebox@gmail.com</a>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             {/* What We Cover */}
             <section className="mb-20">
               <div className="text-center mb-12">

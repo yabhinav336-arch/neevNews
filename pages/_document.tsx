@@ -4,7 +4,11 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* Google Fonts */}
+        {/* Preconnect for faster font loading */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* Google Fonts with display=swap for better performance */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Serif+Pro:wght@400;600;700&display=swap"
@@ -12,6 +16,7 @@ export default function Document() {
 
         {/* DNS Prefetch */}
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         <link rel="dns-prefetch" href="//images.unsplash.com" />
 
         {/* Security Headers */}

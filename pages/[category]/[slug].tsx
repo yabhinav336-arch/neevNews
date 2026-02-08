@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 import { categories } from '../../utils/data';
+import { getImageUrl } from '../../utils/images';
 import Layout from '../../components/Layout/Layout';
 import { 
   Clock, 
@@ -20,7 +21,9 @@ import {
   Twitter,
   Facebook,
   Linkedin,
-  Mail
+  Mail,
+  MessageSquare,
+  Send
 } from 'lucide-react';
 
 interface Article {
@@ -220,6 +223,12 @@ const ArticlePage = () => {
         break;
       case 'linkedin':
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`);
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`);
+        break;
+      case 'telegram':
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`);
         break;
       case 'email':
         window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n\n' + url)}`);
@@ -547,11 +556,12 @@ const ArticlePage = () => {
                 {/* Featured Image - Second */}
                 <div className="relative w-full aspect-video mb-8 rounded-xl overflow-hidden">
                   <Image
-                    src={article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'}
+                    src={getImageUrl(article.imageUrl)}
                     alt={article.title}
                     fill
                     className="object-cover"
                     priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 900px"
                   />
                 </div>
 
@@ -564,7 +574,14 @@ const ArticlePage = () => {
 
                 {/* Article Content */}
                 <div className="prose prose-lg dark:prose-invert max-w-none">
-                  <div className="whitespace-pre-wrap text-secondary-800 dark:text-secondary-200 leading-relaxed text-lg">
+                  <div 
+                    className="whitespace-pre-wrap text-secondary-800 dark:text-secondary-200 leading-[1.8] text-lg md:text-xl font-normal"
+                    style={{
+                      fontFamily: 'Inter, system-ui, sans-serif',
+                      lineHeight: '1.8',
+                      letterSpacing: '0.01em'
+                    }}
+                  >
                     {article.content}
                   </div>
                 </div>
@@ -591,7 +608,7 @@ const ArticlePage = () => {
 
                 {/* Social Actions */}
                 <div className="mt-12 pt-8 border-t border-secondary-200 dark:border-secondary-700">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center space-x-4">
                       <button
                         onClick={handleLike}
@@ -611,17 +628,31 @@ const ArticlePage = () => {
                       </button>
                     </div>
 
-                    <div className="relative">
+                    <div className="relative w-full sm:w-auto">
                       <button
                         onClick={() => setShowShareMenu(!showShareMenu)}
-                        className="flex items-center space-x-2 px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/30 transition-colors duration-200"
+                        className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/30 transition-colors duration-200 min-h-[44px]"
                       >
                         <Share2 size={18} />
                         <span>Share</span>
                       </button>
 
                       {showShareMenu && (
-                        <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-secondary-800 rounded-lg shadow-lg border border-secondary-200 dark:border-secondary-700 py-2 z-50">
+                        <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-secondary-800 rounded-lg shadow-lg border border-secondary-200 dark:border-secondary-700 py-2 z-50">
+                          <button
+                            onClick={() => handleShare('whatsapp')}
+                            className="w-full px-4 py-2 text-left hover:bg-secondary-100 dark:hover:bg-secondary-700 flex items-center space-x-3"
+                          >
+                            <MessageSquare size={18} className="text-green-500" />
+                            <span>WhatsApp</span>
+                          </button>
+                          <button
+                            onClick={() => handleShare('telegram')}
+                            className="w-full px-4 py-2 text-left hover:bg-secondary-100 dark:hover:bg-secondary-700 flex items-center space-x-3"
+                          >
+                            <Send size={18} className="text-blue-400" />
+                            <span>Telegram</span>
+                          </button>
                           <button
                             onClick={() => handleShare('twitter')}
                             className="w-full px-4 py-2 text-left hover:bg-secondary-100 dark:hover:bg-secondary-700 flex items-center space-x-3"
@@ -693,10 +724,12 @@ const ArticlePage = () => {
                         <div className="flex space-x-3">
                           <div className="relative w-16 h-16 flex-shrink-0">
                             <Image
-                              src={relatedArticle.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'}
+                              src={getImageUrl(relatedArticle.imageUrl)}
                               alt={relatedArticle.title}
                               fill
                               className="object-cover rounded-lg"
+                              sizes="64px"
+                              loading="lazy"
                             />
                           </div>
                           <div className="flex-1 min-w-0">
