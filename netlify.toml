@@ -1,19 +1,18 @@
+# Netlify Configuration
+# This file configures your Netlify deployment
+
 [build]
   command = "npm run build"
   publish = ".next"
 
-[build.environment]
-  NODE_VERSION = "18"
-
-# Enable Next.js plugin for proper SSR and 404 handling
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-[context.production]
-  command = "npm run build"
+# Scheduled Functions (if you want to use Netlify's built-in cron)
+# Uncomment and configure if you prefer this over external cron services
 
-[context.deploy-preview]
-  command = "npm run build"
-
-[context.branch-deploy]
-  command = "npm run build"
+# [[plugins]]
+#   package = "@netlify/plugin-scheduled-functions"
+#   [plugins.inputs]
+#     schedule = "*/30 * * * *"  # Every 30 minutes
+#     function = "rss-agent"
