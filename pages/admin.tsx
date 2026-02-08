@@ -38,7 +38,8 @@ import {
   ChevronUp,
   Move,
   Pin,
-  PinOff
+  PinOff,
+  Rss
 } from 'lucide-react';
 
 interface Story {
@@ -101,6 +102,8 @@ const Admin = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [rssAgentStatus, setRssAgentStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
+  const [rssAgentResult, setRssAgentResult] = useState<any>(null);
 
   // Fetch stories on mount and when needed
   useEffect(() => {
@@ -412,6 +415,36 @@ const Admin = () => {
     });
   };
 
+  // Trigger RSS Agent
+  const triggerRssAgent = async () => {
+    setRssAgentStatus('running');
+    setRssAgentResult(null);
+    
+    try {
+      const response = await fetch('/api/rss-agent');
+      const result = await response.json();
+      
+      setRssAgentResult(result);
+      
+      if (result.success) {
+        setRssAgentStatus('success');
+        // Refresh articles after successful fetch
+        setTimeout(() => {
+          fetchStories();
+        }, 2000);
+      } else {
+        setRssAgentStatus('error');
+      }
+    } catch (error: any) {
+      console.error('RSS Agent error:', error);
+      setRssAgentStatus('error');
+      setRssAgentResult({
+        success: false,
+        message: error.message || 'Failed to trigger RSS agent'
+      });
+    }
+  };
+
   // Sidebar navigation
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
@@ -630,6 +663,43 @@ const Admin = () => {
                   </div>
                   <h3 className="font-semibold text-secondary-900 dark:text-white mb-1">Create New Article</h3>
                   <p className="text-sm text-secondary-600 dark:text-secondary-400">Write and publish a new story</p>
+                </button>
+
+                <button
+                  onClick={triggerRssAgent}
+                  disabled={rssAgentStatus === 'running'}
+                  className="card p-6 hover:shadow-lg transition-shadow duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed relative"
+                >
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-4">
+                    {rssAgentStatus === 'running' ? (
+                      <RefreshCw className="w-6 h-6 text-green-600 dark:text-green-400 animate-spin" />
+                    ) : (
+                      <Rss className="w-6 h-6 text-green-600 dark:text-green-400" />
+                    )}
+                  </div>
+                  <h3 className="font-semibold text-secondary-900 dark:text-white mb-1">
+                    {rssAgentStatus === 'running' ? 'Fetching News...' : 'Fetch RSS News'}
+                  </h3>
+                  <p className="text-sm text-secondary-600 dark:text-secondary-400">
+                    {rssAgentStatus === 'running' ? 'Please wait...' : 'Auto-fetch and publish news from RSS feeds'}
+                  </p>
+                  {rssAgentResult && (
+                    <div className={`mt-3 text-xs p-2 rounded ${
+                      rssAgentResult.success 
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                    }`}>
+                      {rssAgentResult.saved > 0 && (
+                        <div>✅ Saved: {rssAgentResult.saved} articles</div>
+                      )}
+                      {rssAgentResult.fetched > 0 && (
+                        <div>📡 Fetched: {rssAgentResult.fetched} articles</div>
+                      )}
+                      {rssAgentResult.message && (
+                        <div className="mt-1">{rssAgentResult.message}</div>
+                      )}
+                    </div>
+                  )}
                 </button>
 
                 <button
