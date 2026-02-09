@@ -73,7 +73,8 @@ function normalizeArticle(item, source) {
 
     // Extract publish date
     const pubDate = item.pubDate ? new Date(item.pubDate) : new Date();
-    
+
+    // (24-hour filter disabled for testing – publish any age)
     // Generate slug from title
     const slug = generateSlug(title);
 

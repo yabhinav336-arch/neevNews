@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../utils/firebase';
+import { getCachedArticles } from '../utils/articlesCache';
 import { categories, getArticleUrl } from '../utils/data';
 import Layout from '../components/Layout/Layout';
 import { Clock, User, Filter, Grid, List, Search } from 'lucide-react';
@@ -42,13 +41,7 @@ const AllNewsPage = () => {
   const fetchAllArticles = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, 'news'));
-      const allArticles = querySnapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      })) as Article[];
-
-      // Filter only published articles
+      const allArticles = await getCachedArticles() as Article[];
       const publishedArticles = allArticles.filter(article => article.status === 'published');
       setArticles(publishedArticles);
     } catch (error) {

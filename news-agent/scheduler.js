@@ -1,7 +1,7 @@
 /**
  * RSS News Scheduler
  * 
- * This file sets up the cron job to fetch and publish news every 30 minutes.
+ * Runs the news agent every 30 minutes.
  * It runs automatically when the script starts.
  */
 
@@ -9,6 +9,7 @@ const cron = require('node-cron');
 const { fetchAllNews } = require('./fetchNews');
 const { filterDuplicates } = require('./dedupe');
 const { saveArticles } = require('./saveArticle');
+const { rewriteArticlesWithAI } = require('./rewriteWithAI');
 const rssSources = require('./rssSources');
 
 /**
@@ -20,7 +21,7 @@ async function runNewsAgent() {
     console.log('🚀 NEEV NEWS RSS AGENT - Starting Run');
     console.log('='.repeat(60) + '\n');
 
-    // Step 1: Fetch news from all RSS sources
+    // Step 1: Fetch news from all RSS sources (last 24 hours only)
     const allArticles = await fetchAllNews(rssSources.sources);
 
     if (allArticles.length === 0) {
@@ -36,8 +37,11 @@ async function runNewsAgent() {
       return;
     }
 
-    // Step 3: Save to database
-    const results = await saveArticles(uniqueArticles);
+    // Step 3: Rewrite with OpenAI (if configured)
+    const rewrittenArticles = await rewriteArticlesWithAI(uniqueArticles);
+
+    // Step 4: Save to database
+    const results = await saveArticles(rewrittenArticles);
 
     // Step 4: Summary
     console.log('='.repeat(60));
@@ -45,7 +49,7 @@ async function runNewsAgent() {
     console.log('='.repeat(60));
     console.log(`📊 Summary:`);
     console.log(`   - Fetched: ${allArticles.length} articles`);
-    console.log(`   - Unique: ${uniqueArticles.length} articles`);
+    console.log(`   - Unique (pre-AI): ${uniqueArticles.length} articles`);
     console.log(`   - Published: ${results.saved} articles`);
     console.log(`   - Skipped: ${results.skipped} articles`);
     console.log(`   - Errors: ${results.errors} articles`);
@@ -64,15 +68,13 @@ async function runNewsAgent() {
 function startScheduler() {
   console.log('⏰ Starting RSS News Scheduler...');
   console.log('   Schedule: Every 30 minutes');
-  console.log('   Next run: In 30 minutes\n');
+  console.log('   Next run: immediately, then every 30 min\n');
 
   // Run immediately on start
   runNewsAgent();
 
   // Then run every 30 minutes
-  // Cron format: minute hour day month weekday
-  // '*/30 * * * *' = every 30 minutes
-  cron.schedule('*/30 * * * *', () => {
+  cron.schedule('0,30 * * * *', () => {
     runNewsAgent();
   });
 

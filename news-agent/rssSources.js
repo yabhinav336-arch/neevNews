@@ -6,42 +6,38 @@
  */
 
 module.exports = {
+  // Testing: fetch more per source (no 24h cap) so more non-duplicates can be published
   sources: [
     {
       name: 'Google News - India',
       url: 'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en',
       category: 'General',
-      maxPerRun: 2, // Max articles to fetch per run
+      maxPerRun: 5,
     },
     {
       name: 'BBC World News',
       url: 'https://feeds.bbci.co.uk/news/world/rss.xml',
       category: 'World',
-      maxPerRun: 2,
+      maxPerRun: 5,
     },
-    {
-      name: 'Reuters World News',
-      url: 'https://www.reuters.com/rssFeed/worldNews',
-      category: 'World',
-      maxPerRun: 2,
-    },
+    // Reuters removed — feed returns 401 (requires auth now)
     {
       name: 'TechCrunch',
       url: 'https://techcrunch.com/feed/',
       category: 'Technology',
-      maxPerRun: 2,
+      maxPerRun: 5,
     },
     {
       name: 'ESPN Sports',
       url: 'https://www.espn.com/espn/rss/news',
       category: 'Sports',
-      maxPerRun: 2,
+      maxPerRun: 5,
     },
     {
       name: 'Science Daily',
       url: 'https://www.sciencedaily.com/rss/all.xml',
       category: 'Science',
-      maxPerRun: 2,
+      maxPerRun: 5,
     },
   ],
 
@@ -54,7 +50,7 @@ module.exports = {
   // Maximum articles to publish per day (safety limit)
   maxArticlesPerDay: 40,
 
-  // Maximum articles per category per run
-  maxPerCategoryPerRun: 2,
+  // Maximum articles per category per run (testing: allow more)
+  maxPerCategoryPerRun: 4,
 };
 

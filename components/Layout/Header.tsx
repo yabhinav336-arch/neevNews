@@ -4,8 +4,7 @@ import { useRouter } from 'next/router';
 import { Menu, X, Search, Bell, User, Sun, Moon, Settings, ChevronRight, Clock, Newspaper } from 'lucide-react';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { categories } from '@/utils/data';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/utils/firebase';
+import { getCachedArticles } from '@/utils/articlesCache';
 
 interface Article {
   id: string;
@@ -45,26 +44,22 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch all articles for search and notifications
+  // Fetch articles for search and notifications (uses shared cache)
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'news'));
-        const articles: Article[] = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.status === 'published') {
-            articles.push({
-              id: doc.id,
-              title: data.title,
-              summary: data.summary,
-              category: data.category,
-              slug: data.slug,
-              imageUrl: data.imageUrl,
-              createdAt: data.createdAt
-            });
-          }
-        });
+        const allDocs = await getCachedArticles();
+        const articles: Article[] = allDocs
+          .filter((d: any) => d.status === 'published')
+          .map((d: any) => ({
+            id: d.id,
+            title: d.title,
+            summary: d.summary,
+            category: d.category,
+            slug: d.slug,
+            imageUrl: d.imageUrl,
+            createdAt: d.createdAt,
+          }));
         
         // Sort by date for latest articles
         const sorted = [...articles].sort((a, b) => {

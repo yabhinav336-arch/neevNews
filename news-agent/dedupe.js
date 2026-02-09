@@ -1,133 +1,130 @@
 /**
- * Duplicate Detection System
- * 
- * This file checks for duplicate articles to avoid publishing the same news twice.
- * It uses title + link combination to detect duplicates.
+ * Duplicate Detection — Local File Cache (ZERO Firestore reads)
+ *
+ * Uses a local JSON file to track every slug and sourceUrl we've
+ * ever published. Duplicate checks happen entirely on disk/memory.
+ *
+ * On first-ever run (empty cache), seeds from Firestore once.
+ * After that, Firestore is NEVER read for dedup again.
  */
 
-const { collection, getDocs, query, where, limit } = require('firebase/firestore');
-const { db } = require('../utils/firebase');
+const fs = require('fs');
+const path = require('path');
+const { collection, getDocs, query, limit } = require('firebase/firestore');
+const { db } = require('./firebaseClient');
 
-/**
- * Check if an article already exists in database
- * @param {Object} article - Article to check
- * @returns {Promise<boolean>} True if duplicate exists
- */
-async function isDuplicate(article) {
+const CACHE_DIR = path.join(__dirname, '.cache');
+const CACHE_FILE = path.join(CACHE_DIR, 'published.json');
+
+// ------------------------------------------------------------------
+// Cache helpers
+// ------------------------------------------------------------------
+
+function ensureCacheDir() {
+  if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
+}
+
+function loadCache() {
+  ensureCacheDir();
+  if (!fs.existsSync(CACHE_FILE)) return { slugs: [], sourceUrls: [], titles: [] };
   try {
-    // Check by slug (most reliable)
-    const slugQuery = query(
-      collection(db, 'news'),
-      where('slug', '==', article.slug),
-      limit(1)
-    );
-    const slugSnapshot = await getDocs(slugQuery);
-    
-    if (!slugSnapshot.empty) {
-      return true; // Duplicate found by slug
-    }
+    const raw = fs.readFileSync(CACHE_FILE, 'utf-8');
+    return JSON.parse(raw);
+  } catch {
+    return { slugs: [], sourceUrls: [], titles: [] };
+  }
+}
 
-    // Also check by title similarity (fuzzy match)
-    // Get recent articles to compare titles
-    const allArticlesQuery = query(
-      collection(db, 'news'),
-      limit(100) // Check last 100 articles
-    );
-    const allSnapshot = await getDocs(allArticlesQuery);
-    
-    const existingTitles = [];
-    allSnapshot.forEach(doc => {
-      const data = doc.data();
-      if (data.title) {
-        existingTitles.push(data.title.toLowerCase().trim());
-      }
+function saveCache(data) {
+  ensureCacheDir();
+  fs.writeFileSync(CACHE_FILE, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+// ------------------------------------------------------------------
+// One-time seed: if cache is empty, pull existing data from Firestore
+// This is the ONLY time this module reads from Firestore.
+// ------------------------------------------------------------------
+
+async function seedCacheIfEmpty() {
+  const cache = loadCache();
+  if (cache.slugs.length > 0) return cache; // already seeded
+
+  console.log('   📥 First run — seeding cache from Firestore (one-time)...');
+  try {
+    const snapshot = await getDocs(query(collection(db, 'news'), limit(1000)));
+    snapshot.forEach((doc) => {
+      const d = doc.data();
+      if (d.slug) cache.slugs.push(d.slug);
+      if (d.sourceUrl) cache.sourceUrls.push(d.sourceUrl);
+      if (d.title) cache.titles.push(d.title.toLowerCase().trim());
     });
-
-    // Check if title is very similar (90% match)
-    const articleTitle = article.title.toLowerCase().trim();
-    for (const existingTitle of existingTitles) {
-      if (calculateSimilarity(articleTitle, existingTitle) > 0.9) {
-        return true; // Very similar title found
-      }
-    }
-
-    // Check by source URL if available
-    if (article.sourceUrl) {
-      const sourceQuery = query(
-        collection(db, 'news'),
-        where('sourceUrl', '==', article.sourceUrl),
-        limit(1)
-      );
-      const sourceSnapshot = await getDocs(sourceQuery);
-      
-      if (!sourceSnapshot.empty) {
-        return true; // Duplicate source URL
-      }
-    }
-
-    return false; // No duplicate found
-  } catch (error) {
-    console.error('   ⚠️  Error checking duplicate:', error.message);
-    // On error, assume it's not a duplicate (safer to check manually)
-    return false;
+    saveCache(cache);
+    console.log(`   ✅ Cache seeded with ${snapshot.size} existing articles`);
+  } catch (err) {
+    console.error('   ⚠️  Error seeding cache:', err.message);
   }
+  return cache;
 }
 
-/**
- * Calculate similarity between two strings (0-1)
- * Uses Levenshtein distance algorithm
- */
-function calculateSimilarity(str1, str2) {
-  const longer = str1.length > str2.length ? str1 : str2;
-  const shorter = str1.length > str2.length ? str2 : str1;
-  
-  if (longer.length === 0) {
-    return 1.0; // Both empty
-  }
+// ------------------------------------------------------------------
+// Similarity
+// ------------------------------------------------------------------
 
-  // Simple word-based similarity
-  const words1 = str1.split(/\s+/);
-  const words2 = str2.split(/\s+/);
-  
-  const commonWords = words1.filter(word => words2.includes(word));
-  const totalWords = Math.max(words1.length, words2.length);
-  
-  return commonWords.length / totalWords;
+function calculateSimilarity(a, b) {
+  if (!a || !b) return 0;
+  const w1 = a.split(/\s+/);
+  const w2 = b.split(/\s+/);
+  const common = w1.filter((w) => w2.includes(w));
+  const total = Math.max(w1.length, w2.length);
+  return total === 0 ? 0 : common.length / total;
 }
 
+// ------------------------------------------------------------------
+// Public API
+// ------------------------------------------------------------------
+
 /**
- * Filter out duplicate articles
- * @param {Array} articles - Array of articles to check
- * @returns {Promise<Array>} Array of unique articles
+ * Filter out duplicates using the local cache.
+ * Firestore reads: 0 (unless first-ever run).
  */
 async function filterDuplicates(articles) {
-  console.log(`\n🔍 Checking for duplicates...\n`);
-  
+  console.log('\n🔍 Checking for duplicates (local cache)...\n');
+
+  const cache = await seedCacheIfEmpty();
+  const slugSet = new Set(cache.slugs);
+  const urlSet = new Set(cache.sourceUrls);
+
   const uniqueArticles = [];
-  let duplicateCount = 0;
+  let dupCount = 0;
 
   for (const article of articles) {
-    const isDup = await isDuplicate(article);
-    
+    const isDup =
+      slugSet.has(article.slug) ||
+      (article.sourceUrl && urlSet.has(article.sourceUrl)) ||
+      cache.titles.some((t) => calculateSimilarity(article.title.toLowerCase().trim(), t) > 0.9);
+
     if (isDup) {
-      console.log(`   ⏭️  Skipping duplicate: ${article.title.substring(0, 50)}...`);
-      duplicateCount++;
+      console.log(`   ⏭️  Duplicate: ${article.title.substring(0, 55)}...`);
+      dupCount++;
     } else {
       uniqueArticles.push(article);
-      console.log(`   ✅ Unique: ${article.title.substring(0, 50)}...`);
+      // Update in-memory sets so we don't duplicate within this batch
+      slugSet.add(article.slug);
+      cache.slugs.push(article.slug);
+      if (article.sourceUrl) {
+        urlSet.add(article.sourceUrl);
+        cache.sourceUrls.push(article.sourceUrl);
+      }
+      cache.titles.push(article.title.toLowerCase().trim());
+      console.log(`   ✅ New: ${article.title.substring(0, 55)}...`);
     }
   }
 
-  console.log(`\n📊 Duplicate check complete:`);
-  console.log(`   - Total articles: ${articles.length}`);
-  console.log(`   - Duplicates found: ${duplicateCount}`);
-  console.log(`   - Unique articles: ${uniqueArticles.length}\n`);
+  // Persist updated cache to disk
+  saveCache(cache);
 
+  console.log(`\n📊 Dedup: ${articles.length} checked, ${dupCount} duplicates, ${uniqueArticles.length} new\n`);
   return uniqueArticles;
 }
 
-module.exports = {
-  isDuplicate,
-  filterDuplicates,
-};
-
+module.exports = { filterDuplicates };

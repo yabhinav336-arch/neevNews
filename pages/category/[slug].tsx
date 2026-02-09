@@ -3,8 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../utils/firebase';
+import { getCachedArticles } from '../../utils/articlesCache';
 import { categories, getArticleUrl } from '../../utils/data';
 import Layout from '../../components/Layout/Layout';
 import { Clock, User, ArrowLeft, Filter, Grid, List } from 'lucide-react';
@@ -46,18 +45,10 @@ const CategoryPage = () => {
   const fetchCategoryArticles = async (categoryName: string) => {
     setLoading(true);
     try {
-      const articlesRef = collection(db, 'news');
-      const q = query(
-        articlesRef,
-        where('category', '==', categoryName),
-        where('status', '==', 'published')
+      const allArticles = await getCachedArticles() as Article[];
+      let fetchedArticles = allArticles.filter(
+        (a) => a.category === categoryName && a.status === 'published'
       );
-      const querySnapshot = await getDocs(q);
-      
-      let fetchedArticles = querySnapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      })) as Article[];
 
       // Sort articles
       if (sortBy === 'latest') {

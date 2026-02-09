@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NextSeo } from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
-import { db } from '../utils/firebase';
+import { getCachedArticles } from '../utils/articlesCache';
 import { categories, trendingTopics, getArticleUrl } from '../utils/data';
 import { getImageUrl } from '../utils/images';
 import { subscribeToNewsletter } from '../services/newsletter';
@@ -63,14 +62,8 @@ const HomePage: React.FC = () => {
 
   const fetchArticles = async () => {
     try {
-      // Fetch all articles from Firebase
-      const querySnapshot = await getDocs(collection(db, 'news'));
-      const allArticles = querySnapshot.docs.map(doc => ({ 
-        ...doc.data(), 
-        id: doc.id 
-      })) as Article[];
-
-      console.log('Fetched articles from Firebase:', allArticles.length);
+      // Fetch from cache (only hits Firestore if cache expired)
+      const allArticles = await getCachedArticles() as Article[];
 
       // Filter published articles
       const publishedArticles = allArticles.filter(article => article.status === 'published');
