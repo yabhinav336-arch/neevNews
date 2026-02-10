@@ -18,6 +18,7 @@
 
 const { initializeApp, getApps } = require('firebase/app');
 const { getFirestore } = require('firebase/firestore');
+const { getStorage } = require('firebase/storage');
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyDTAjMPLylkSq3Gjh90ggtW3-c7Mg8Yads',
@@ -33,6 +34,7 @@ const firebaseConfig = {
 // Avoid initializing Firebase more than once in the same process
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-module.exports = { db };
+module.exports = { app, db, storage };
 
