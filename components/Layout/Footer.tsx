@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
 
     const result = await subscribeToNewsletter(email, 'footer');
     setStatus(result.success ? 'success' : 'error');
-    
+
     if (result.success) {
       setEmail('');
     }
@@ -49,7 +49,7 @@ const Footer: React.FC = () => {
               </div>
             </Link>
             <p className="text-secondary-400 mb-6 text-sm leading-relaxed">
-              Your trusted source for global news, in-depth analysis, and compelling stories from around the world. 
+              Your trusted source for global news, in-depth analysis, and compelling stories from around the world.
               Stay informed with accurate, timely reporting on the issues that matter most.
             </p>
             <div className="flex space-x-4">
@@ -197,13 +197,12 @@ const Footer: React.FC = () => {
                 <button
                   type="submit"
                   disabled={status === 'loading'}
-                  className={`px-4 py-2 rounded-r-lg transition-colors duration-200 text-sm font-medium disabled:opacity-50 ${
-                    status === 'success'
+                  className={`px-4 py-2 rounded-r-lg transition-colors duration-200 text-sm font-medium disabled:opacity-50 ${status === 'success'
                       ? 'bg-green-600 text-white'
                       : status === 'error'
-                      ? 'bg-red-600 text-white'
-                      : 'bg-primary-600 hover:bg-primary-700 text-white'
-                  }`}
+                        ? 'bg-red-600 text-white'
+                        : 'bg-primary-600 hover:bg-primary-700 text-white'
+                    }`}
                 >
                   {status === 'loading' ? '...' : status === 'success' ? '✓' : status === 'error' ? '✗' : 'Subscribe'}
                 </button>
@@ -226,16 +225,28 @@ const Footer: React.FC = () => {
                 Publication Policy
               </Link>
               <Link
+                href="/editorial-policy"
+                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
+              >
+                Editorial Policy
+              </Link>
+              <Link
+                href="/fact-check-policy"
+                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
+              >
+                Fact-Check Policy
+              </Link>
+              <Link
+                href="/corrections-policy"
+                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
+              >
+                Corrections Policy
+              </Link>
+              <Link
                 href="/privacy"
                 className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
               >
                 Privacy Policy
-              </Link>
-              <Link
-                href="/terms"
-                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
-              >
-                Terms of Service
               </Link>
               <Link
                 href="/cookies"

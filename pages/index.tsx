@@ -7,9 +7,9 @@ import { categories, trendingTopics, getArticleUrl } from '../utils/data';
 import { getImageUrl } from '../utils/images';
 import { subscribeToNewsletter } from '../services/newsletter';
 import Layout from '@/components/Layout/Layout';
-import { 
-  TrendingUp, 
-  Clock, 
+import {
+  TrendingUp,
+  Clock,
   User,
   ArrowRight,
   Play,
@@ -67,7 +67,7 @@ const HomePage: React.FC = () => {
 
       // Filter published articles
       const publishedArticles = allArticles.filter(article => article.status === 'published');
-      
+
       // Sort by date (newest first)
       const sortedArticles = publishedArticles.sort((a, b) => {
         const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
@@ -114,7 +114,7 @@ const HomePage: React.FC = () => {
     setNewsletterStatus('loading');
 
     const result = await subscribeToNewsletter(newsletterEmail, 'homepage-hero');
-    
+
     if (result.success) {
       setNewsletterStatus('success');
       setNewsletterMessage(result.message);
@@ -144,7 +144,7 @@ const HomePage: React.FC = () => {
     if (!date) return '';
     const dateObj = date.toDate ? date.toDate() : new Date(date);
     const seconds = Math.floor((new Date().getTime() - dateObj.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
@@ -200,6 +200,11 @@ const HomePage: React.FC = () => {
                   '@type': 'ImageObject',
                   url: 'https://neevnews.com/logo.png',
                 },
+                sameAs: [
+                  'https://www.linkedin.com/in/neev-news-855010395/',
+                  'https://x.com/NeevNews',
+                  'https://www.instagram.com/neevnews/'
+                ]
               },
             }),
           }}
@@ -309,7 +314,7 @@ const HomePage: React.FC = () => {
                           sizes="(max-width: 768px) 100vw, 66vw"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                        
+
                         {/* Badges */}
                         <div className="absolute top-6 left-6 flex items-center space-x-2">
                           {featuredArticles[0].isBreaking && (
@@ -586,9 +591,9 @@ const HomePage: React.FC = () => {
                               <h3 className="text-sm font-semibold text-secondary-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                                 {article.title}
                               </h3>
-                            <div className="flex items-center text-xs text-secondary-500">
-                              <span>{formatTimeAgo(article.createdAt)}</span>
-                            </div>
+                              <div className="flex items-center text-xs text-secondary-500">
+                                <span>{formatTimeAgo(article.createdAt)}</span>
+                              </div>
                             </div>
                           </div>
                         </Link>
