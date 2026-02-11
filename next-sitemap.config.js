@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.SITE_URL || 'https://neevnews.app/',
+  siteUrl: process.env.SITE_URL || 'https://neevnews.com',
   generateRobotsTxt: true,
   generateIndexSitemap: true,
   
@@ -31,8 +31,8 @@ module.exports = {
       },
     ],
     additionalSitemaps: [
-      'https://neevnews.app/sitemap-news.xml',
-      'https://neevnews.app/server-sitemap.xml',
+      'https://neevnews.com/sitemap-news.xml',
+      'https://neevnews.com/server-sitemap.xml',
     ],
   },
 

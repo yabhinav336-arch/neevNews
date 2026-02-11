@@ -37,7 +37,7 @@ const ContactPage = () => {
     >
       <Head>
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://neevnews.app/contact" />
+        <link rel="canonical" href="https://neevnews.com/contact" />
       </Head>
 
       <div className="min-h-screen bg-white dark:bg-secondary-950">

@@ -8,6 +8,19 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Canonical domain redirects
+[[redirects]]
+  from = "https://neevnews.app/*"
+  to = "https://neevnews.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.neevnews.app/*"
+  to = "https://neevnews.com/:splat"
+  status = 301
+  force = true
+
 # Scheduled Functions (if you want to use Netlify's built-in cron)
 # Uncomment and configure if you prefer this over external cron services
 

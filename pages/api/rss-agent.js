@@ -5,10 +5,10 @@
  * 
  * HOW TO USE:
  * 1. Deploy your site to Netlify/Vercel
- * 2. Set up a cron job to call: https://neevnews.app/api/rss-agent
+ * 2. Set up a cron job to call: https://neevnews.com/api/rss-agent
  * 3. Cron runs every 30 minutes automatically
  * 
- * OR call manually: https://neevnews.app/api/rss-agent
+ * OR call manually: https://neevnews.com/api/rss-agent
  */
 
 import { collection, addDoc, getDocs, query, where, limit, Timestamp } from 'firebase/firestore';

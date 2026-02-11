@@ -13,9 +13,9 @@ User-agent: Googlebot-News
 Allow: /
 
 # Host
-Host: https://neevnews.app/
+Host: https://neevnews.com
 
 # Sitemaps
-Sitemap: https://neevnews.app/sitemap.xml
-Sitemap: https://neevnews.app/sitemap-news.xml
-Sitemap: https://neevnews.app/server-sitemap.xml
+Sitemap: https://neevnews.com/sitemap.xml
+Sitemap: https://neevnews.com/sitemap-news.xml
+Sitemap: https://neevnews.com/server-sitemap.xml

@@ -323,22 +323,22 @@ const ArticlePage = () => {
     author: {
       '@type': 'Person',
       name: article.author || 'Neev News',
-      url: 'https://neevnews.app/about',
+      url: 'https://neevnews.com/about',
     },
     publisher: {
       '@type': 'Organization',
       name: 'Neev News',
-      url: 'https://neevnews.app',
+      url: 'https://neevnews.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://neevnews.app/logo.png',
+        url: 'https://neevnews.com/logo.png',
         width: 600,
         height: 60,
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://neevnews.app${articleUrl}`,
+      '@id': `https://neevnews.com${articleUrl}`,
     },
     articleSection: article.category,
     keywords: article.keywords || article.tags?.join(', ') || '',
@@ -352,7 +352,7 @@ const ArticlePage = () => {
       title={article.title}
       description={article.metaDescription || article.summary}
       keywords={article.keywords}
-      canonicalUrl={`https://neevnews.app${articleUrl}`}
+      canonicalUrl={`https://neevnews.com${articleUrl}`}
     >
       <Head>
         {/* Structured Data for NewsArticle */}
@@ -366,7 +366,7 @@ const ArticlePage = () => {
         <meta property="og:description" content={article.metaDescription || article.summary} />
         <meta property="og:image" content={article.imageUrl} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://neevnews.app${articleUrl}`} />
+        <meta property="og:url" content={`https://neevnews.com${articleUrl}`} />
         <meta property="article:author" content={article.author} />
         <meta property="article:published_time" content={article.createdAt?.toDate?.()?.toISOString() || ''} />
         <meta property="article:section" content={article.category} />
