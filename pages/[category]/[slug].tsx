@@ -8,11 +8,11 @@ import { db } from '../../utils/firebase';
 import { categories } from '../../utils/data';
 import { getImageUrl } from '../../utils/images';
 import Layout from '../../components/Layout/Layout';
-import { 
-  Clock, 
-  User, 
-  Heart, 
-  Share2, 
+import {
+  Clock,
+  User,
+  Heart,
+  Share2,
   Calendar,
   ArrowLeft,
   Tag,
@@ -44,6 +44,8 @@ interface Article {
   slug: string;
   views: number;
   likes: number;
+  sourceUrl?: string;
+  sourceName?: string;
 }
 
 // Helper function to get category slug from category name
@@ -72,7 +74,7 @@ const ArticlePage = () => {
   useEffect(() => {
     // Wait for router to be ready
     if (!router.isReady) return;
-    
+
     if (articleSlug && typeof articleSlug === 'string') {
       fetchArticle(articleSlug);
     }
@@ -186,8 +188,8 @@ const ArticlePage = () => {
     try {
       const articlesRef = collection(db, 'news');
       const q = query(
-        articlesRef, 
-        where('category', '==', category), 
+        articlesRef,
+        where('category', '==', category),
         where('status', '==', 'published'),
         orderBy('createdAt', 'desc'),
         limit(4)
@@ -310,7 +312,7 @@ const ArticlePage = () => {
   }
 
   const articleUrl = getArticleUrl(article);
-  
+
   // Structured data for the article (NewsArticle schema for Google)
   const articleSchema = {
     '@context': 'https://schema.org',
@@ -360,7 +362,7 @@ const ArticlePage = () => {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
         />
-        
+
         {/* Open Graph Meta Tags */}
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={article.metaDescription || article.summary} />
@@ -382,22 +384,22 @@ const ArticlePage = () => {
         <meta name="twitter:description" content={article.metaDescription || article.summary} />
         <meta name="twitter:image" content={article.imageUrl} />
         <meta name="twitter:image:alt" content={article.title} />
-        
+
         {/* Additional SEO Meta Tags */}
         <meta name="news_keywords" content={article.keywords || article.category} />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        
+
         {/* Mobile App Meta Tags */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="NeevNews" />
-        
+
         {/* Microsoft Tags */}
         <meta name="msapplication-TileColor" content="#D9774A" />
         <meta name="msapplication-TileImage" content="/logo.png" />
-        
+
         {/* Google News Subscribe with Google */}
         <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
 
@@ -455,7 +457,7 @@ const ArticlePage = () => {
             })
           }}
         />
-        
+
         {/* Breadcrumb Schema */}
         <script
           type="application/ld+json"
@@ -504,7 +506,7 @@ const ArticlePage = () => {
             `,
           }}
         />
-        
+
         {/* Header Section */}
         <div className="bg-white dark:bg-secondary-950 border-b border-secondary-200 dark:border-secondary-800">
           <div className="container-custom py-6">
@@ -574,7 +576,7 @@ const ArticlePage = () => {
 
                 {/* Article Content */}
                 <div className="prose prose-lg dark:prose-invert max-w-none">
-                  <div 
+                  <div
                     className="whitespace-pre-wrap text-secondary-800 dark:text-secondary-200 leading-[1.8] text-lg md:text-xl font-normal"
                     style={{
                       fontFamily: 'Inter, system-ui, sans-serif',
@@ -582,9 +584,42 @@ const ArticlePage = () => {
                       letterSpacing: '0.01em'
                     }}
                   >
-                    {article.content}
+                    {article.content.split(/(https?:\/\/[^\s]+)/g).map((part, index) => {
+                      if (part.match(/https?:\/\/[^\s]+/)) {
+                        return (
+                          <a
+                            key={index}
+                            href={part}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary-600 dark:text-primary-400 hover:underline break-all"
+                          >
+                            {part}
+                          </a>
+                        );
+                      }
+                      return part;
+                    })}
                   </div>
                 </div>
+
+                {/* Source Link */}
+                {article.sourceUrl && (
+                  <div className="mt-8 pt-4 border-t border-secondary-200 dark:border-secondary-700">
+                    <p className="text-sm text-secondary-600 dark:text-secondary-400">
+                      Source: {' '}
+                      <a
+                        href={article.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                      >
+                        {article.sourceName || 'Read Original Article'}
+                        <span className="inline-block ml-1">↗</span>
+                      </a>
+                    </p>
+                  </div>
+                )}
 
                 {/* Tags */}
                 {article.tags && article.tags.length > 0 && (
@@ -612,11 +647,10 @@ const ArticlePage = () => {
                     <div className="flex items-center space-x-4">
                       <button
                         onClick={handleLike}
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                          isLiked
-                            ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                            : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                        }`}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${isLiked
+                          ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                          : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-200 dark:hover:bg-secondary-700'
+                          }`}
                       >
                         <Heart size={18} className={isLiked ? 'fill-current' : ''} />
                         <span>{article.likes + (isLiked ? 1 : 0)}</span>
