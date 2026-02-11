@@ -31,6 +31,39 @@
     @apply font-serif font-semibold;
   }
 
+  /* Typography Overrides for Premium Feel */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: -0.02em;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reading Progress Bar */
+.reading-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(to right, #2563eb, #3b82f6);
+  z-index: 100;
+  width: 0%;
+  transition: width 0.1s ease-out;
+}
+
+/* Card Improvements */
+.card-hover {
+  transition: all 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
+}
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 6px;

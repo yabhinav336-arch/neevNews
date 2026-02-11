@@ -29,7 +29,7 @@ const Header: React.FC = () => {
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [latestArticles, setLatestArticles] = useState<Article[]>([]);
   const { isDark, toggleDarkMode, isLoaded } = useDarkMode();
-  
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -60,14 +60,14 @@ const Header: React.FC = () => {
             imageUrl: d.imageUrl,
             createdAt: d.createdAt,
           }));
-        
+
         // Sort by date for latest articles
         const sorted = [...articles].sort((a, b) => {
           const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
           const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
           return dateB.getTime() - dateA.getTime();
         });
-        
+
         setAllArticles(articles);
         setLatestArticles(sorted.slice(0, 5));
       } catch (error) {
@@ -86,12 +86,12 @@ const Header: React.FC = () => {
 
     setIsSearching(true);
     const query = searchQuery.toLowerCase();
-    const results = allArticles.filter(article => 
+    const results = allArticles.filter(article =>
       article.title.toLowerCase().includes(query) ||
       article.summary.toLowerCase().includes(query) ||
       article.category.toLowerCase().includes(query)
     ).slice(0, 6);
-    
+
     setSearchResults(results);
     setIsSearching(false);
   }, [searchQuery, allArticles]);
@@ -178,7 +178,7 @@ const Header: React.FC = () => {
     if (!date) return '';
     const dateObj = date.toDate ? date.toDate() : new Date(date);
     const seconds = Math.floor((new Date().getTime() - dateObj.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
@@ -188,11 +188,10 @@ const Header: React.FC = () => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || isMenuOpen
             ? 'bg-white/95 dark:bg-secondary-950/95 backdrop-blur-md shadow-lg'
             : 'bg-transparent'
-        }`}
+          }`}
       >
         <div className="container-custom">
           <div className="flex items-center justify-between h-16 lg:h-20">
@@ -452,9 +451,8 @@ const Header: React.FC = () => {
 
           {/* Mobile Menu */}
           <div
-            className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-              isMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
-            }`}
+            className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
           >
             <nav className="py-4 space-y-2 border-t border-secondary-200 dark:border-secondary-700">
               {/* Mobile Search */}
@@ -495,7 +493,7 @@ const Header: React.FC = () => {
               >
                 About
               </Link>
-              
+
               <div className="border-t border-secondary-200 dark:border-secondary-700 pt-4 mt-4">
                 <Link
                   href="/news"
@@ -530,7 +528,7 @@ const Header: React.FC = () => {
       {/* Search Modal Overlay */}
       {isSearchOpen && (
         <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-start justify-center pt-20 px-4">
-          <div 
+          <div
             ref={searchContainerRef}
             className="w-full max-w-2xl bg-white dark:bg-secondary-900 rounded-2xl shadow-2xl overflow-hidden"
           >

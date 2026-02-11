@@ -245,53 +245,15 @@ const HomePage: React.FC = () => {
           {latestNews.length === 0 && featuredArticles.length === 0 && breakingNews.length === 0 && (
             <section className="container-custom py-20">
               <div className="max-w-2xl mx-auto text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-white text-4xl">📰</span>
+                <div className="w-24 h-24 bg-secondary-100 dark:bg-secondary-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-secondary-400 text-4xl">📰</span>
                 </div>
-                <h2 className="text-3xl font-bold text-secondary-900 dark:text-white mb-4 font-serif">
-                  Welcome to Neev News
+                <h2 className="text-2xl font-bold text-secondary-900 dark:text-white mb-2 font-serif">
+                  No Articles Found
                 </h2>
-                <p className="text-lg text-secondary-600 dark:text-secondary-400 mb-8">
-                  We're preparing to bring you the latest news and stories. Stay tuned for updates!
+                <p className="text-secondary-600 dark:text-secondary-400">
+                  We couldn't find any articles at the moment. Please check back later or verify your internet connection.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    href="/newsletter"
-                    className="inline-flex items-center justify-center space-x-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200 min-h-[48px]"
-                  >
-                    <span>Subscribe to Newsletter</span>
-                    <ArrowRight size={20} />
-                  </Link>
-                  <Link
-                    href="/about"
-                    className="inline-flex items-center justify-center space-x-2 px-8 py-4 bg-secondary-200 dark:bg-secondary-800 hover:bg-secondary-300 dark:hover:bg-secondary-700 text-secondary-900 dark:text-white font-semibold rounded-lg transition-colors duration-200 min-h-[48px]"
-                  >
-                    <span>Learn More</span>
-                  </Link>
-                </div>
-                <div className="mt-12 p-6 bg-secondary-50 dark:bg-secondary-900 rounded-xl">
-                  <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-3">
-                    What to Expect:
-                  </h3>
-                  <ul className="text-left space-y-2 text-secondary-700 dark:text-secondary-300">
-                    <li className="flex items-start space-x-2">
-                      <span className="text-primary-600">✓</span>
-                      <span>Breaking news and latest updates</span>
-                    </li>
-                    <li className="flex items-start space-x-2">
-                      <span className="text-primary-600">✓</span>
-                      <span>In-depth analysis on science and technology</span>
-                    </li>
-                    <li className="flex items-start space-x-2">
-                      <span className="text-primary-600">✓</span>
-                      <span>Health, politics, and world affairs coverage</span>
-                    </li>
-                    <li className="flex items-start space-x-2">
-                      <span className="text-primary-600">✓</span>
-                      <span>Expert opinions and investigative journalism</span>
-                    </li>
-                  </ul>
-                </div>
               </div>
             </section>
           )}

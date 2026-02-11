@@ -7,13 +7,15 @@ import { collection, getDocs, query, where, orderBy, limit } from 'firebase/fire
 import { db } from '../../utils/firebase';
 import { categories, getArticleUrl } from '../../utils/data';
 import Layout from '../../components/Layout/Layout';
-import { 
-  Clock, 
-  User, 
-  Eye, 
-  Heart, 
-  Share2, 
-  BookOpen, 
+import ReadingProgress from '../../components/Article/ReadingProgress';
+import ShareButtons from '../../components/Article/ShareButtons';
+import {
+  Clock,
+  User,
+  Eye,
+  Heart,
+  Share2,
+  BookOpen,
   Calendar,
   ArrowLeft,
   Tag,
@@ -24,7 +26,8 @@ import {
   Linkedin,
   Mail,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  CheckCircle
 } from 'lucide-react';
 
 interface Article {
@@ -78,12 +81,12 @@ const ArticlePage = () => {
       const articlesRef = collection(db, 'news');
       // Query by slug - requires Firestore index: slug (Ascending), status (Ascending)
       const q = query(
-        articlesRef, 
-        where('slug', '==', articleSlug), 
+        articlesRef,
+        where('slug', '==', articleSlug),
         where('status', '==', 'published')
       );
       const querySnapshot = await getDocs(q);
-      
+
       if (!querySnapshot.empty) {
         const articleData = querySnapshot.docs[0].data() as Article;
         articleData.id = querySnapshot.docs[0].id;
@@ -215,22 +218,22 @@ const ArticlePage = () => {
         <meta name="twitter:description" content={article.metaDescription || article.summary} />
         <meta name="twitter:image" content={article.imageUrl} />
         <meta name="twitter:image:alt" content={article.title} />
-        
+
         {/* Additional SEO Meta Tags */}
         <meta name="news_keywords" content={article.keywords || article.category} />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        
+
         {/* Mobile App Meta Tags */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="NeevNews" />
-        
+
         {/* Microsoft Tags */}
         <meta name="msapplication-TileColor" content="#D9774A" />
         <meta name="msapplication-TileImage" content="/logo.png" />
-        
+
         {/* Google News Subscribe with Google */}
         <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
 
@@ -288,7 +291,7 @@ const ArticlePage = () => {
             })
           }}
         />
-        
+
         {/* Breadcrumb Schema */}
         <script
           type="application/ld+json"
@@ -337,7 +340,10 @@ const ArticlePage = () => {
             `,
           }}
         />
-        
+
+        {/* Reading Progress Bar */}
+        <ReadingProgress />
+
         {/* Hero Section */}
         <div className="relative">
           {/* Back Button */}
@@ -360,10 +366,10 @@ const ArticlePage = () => {
               className="object-cover"
               priority
             />
-            
+
             {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
             {/* Article Info Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-8">
               <div className="container-custom">
@@ -377,22 +383,30 @@ const ArticlePage = () => {
                   </div>
 
                   {/* Title */}
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 font-serif leading-tight">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 font-serif leading-tight text-shadow-sm">
                     {article.title}
                   </h1>
 
                   {/* Article Meta */}
-                  <div className="flex flex-wrap items-center gap-6 text-white/90 text-sm">
+                  <div className="flex flex-wrap items-center gap-6 text-white/95 text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <User size={16} />
-                      <span>By {article.author}</span>
+                      <div className="relative">
+                        <User size={18} />
+                        <div className="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-[2px] border border-white">
+                          <CheckCircle size={8} className="text-white" />
+                        </div>
+                      </div>
+                      <span className="flex flex-col">
+                        <span>By {article.author}</span>
+                        <span className="text-[10px] text-blue-200 uppercase tracking-wider font-bold">Verified by Human Editors</span>
+                      </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Calendar size={16} />
+                      <Calendar size={18} />
                       <span>{formatDate(article.createdAt)}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Clock size={16} />
+                      <Clock size={18} />
                       <span>{readingTime} min read</span>
                     </div>
                   </div>
@@ -405,7 +419,9 @@ const ArticlePage = () => {
         <div className="container-custom py-12">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             {/* Main Content */}
-            <article className="lg:col-span-3">
+            <article className="lg:col-span-3 relative">
+              <ShareButtons title={article.title} url={`https://neevnews.com/article/${article.slug}`} />
+
               <div className="max-w-4xl">
                 {/* Article Summary */}
                 <div className="mb-8 p-6 bg-primary-50 dark:bg-primary-900/20 rounded-xl border-l-4 border-primary-500">
@@ -447,11 +463,10 @@ const ArticlePage = () => {
                     <div className="flex items-center space-x-4">
                       <button
                         onClick={handleLike}
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                          isLiked
-                            ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                            : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                        }`}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${isLiked
+                          ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                          : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-200 dark:hover:bg-secondary-700'
+                          }`}
                       >
                         <Heart size={18} className={isLiked ? 'fill-current' : ''} />
                         <span>{article.likes + (isLiked ? 1 : 0)}</span>
