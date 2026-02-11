@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { NextSeo } from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getCachedArticles } from '../utils/articlesCache';
-import { categories, trendingTopics, getArticleUrl } from '../utils/data';
+import { GetStaticProps } from 'next';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { db } from '../utils/firebase';
+import { categories, getArticleUrl } from '../utils/data';
 import { getImageUrl } from '../utils/images';
 import { subscribeToNewsletter } from '../services/newsletter';
 import Layout from '@/components/Layout/Layout';
@@ -12,10 +14,8 @@ import {
   Clock,
   User,
   ArrowRight,
-  Play,
   ChevronRight,
   Flame,
-  Globe,
   Zap,
   Pin
 } from 'lucide-react';
@@ -28,7 +28,7 @@ interface Article {
   imageUrl: string;
   category: string;
   author: string;
-  createdAt: any;
+  createdAt: string; // ISO string for serialization
   metaDescription: string;
   keywords: string;
   tags: string[];
@@ -42,76 +42,29 @@ interface Article {
   isTrending?: boolean;
   isPinned?: boolean;
   homepagePosition?: number;
-  publishedAt?: any;
+  publishedAt?: string;
 }
 
-const HomePage: React.FC = () => {
-  const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
-  const [latestNews, setLatestNews] = useState<Article[]>([]);
-  const [trendingArticles, setTrendingArticles] = useState<Article[]>([]);
-  const [breakingNews, setBreakingNews] = useState<Article[]>([]);
-  const [pinnedArticles, setPinnedArticles] = useState<Article[]>([]);
-  const [categoryNews, setCategoryNews] = useState<{ [key: string]: Article[] }>({});
+interface HomePageProps {
+  featuredArticles: Article[];
+  latestNews: Article[];
+  trendingArticles: Article[];
+  breakingNews: Article[];
+  pinnedArticles: Article[];
+  categoryNews: { [key: string]: Article[] };
+}
+
+const HomePage: React.FC<HomePageProps> = ({
+  featuredArticles,
+  latestNews,
+  trendingArticles,
+  breakingNews,
+  pinnedArticles,
+  categoryNews
+}) => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchArticles();
-  }, []);
-
-  const fetchArticles = async () => {
-    try {
-      setLoading(true);
-      // Fetch from cache (only hits Firestore if cache expired)
-      const allArticles = await getCachedArticles() as Article[];
-
-      // Filter published articles
-      const publishedArticles = allArticles.filter(article => article.status === 'published');
-
-      // Sort by date (newest first)
-      const sortedArticles = publishedArticles.sort((a, b) => {
-        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-        return dateB.getTime() - dateA.getTime();
-      });
-
-      // Get breaking news articles (marked as breaking in CMS)
-      const breaking = sortedArticles.filter(article => article.isBreaking);
-      setBreakingNews(breaking);
-
-      // Get featured articles (marked as featured in CMS)
-      const featured = sortedArticles.filter(article => article.featured);
-      setFeaturedArticles(featured.slice(0, 3));
-
-      // Get trending articles (marked as trending in CMS, fallback to latest if none)
-      const trending = sortedArticles.filter(article => article.isTrending);
-      setTrendingArticles(trending.length > 0 ? trending.slice(0, 5) : sortedArticles.slice(0, 5));
-
-      // Get pinned articles (marked as pinned in CMS)
-      const pinned = sortedArticles.filter(article => article.isPinned);
-      setPinnedArticles(pinned);
-
-      // For latest news, show pinned first, then rest sorted by date
-      const unpinnedArticles = sortedArticles.filter(article => !article.isPinned);
-      const orderedLatest = [...pinned, ...unpinnedArticles];
-      setLatestNews(orderedLatest.slice(0, 12));
-
-      // Group by category
-      const categoryGroups: { [key: string]: Article[] } = {};
-      categories.slice(0, 4).forEach(cat => {
-        categoryGroups[cat.name] = sortedArticles
-          .filter(article => article.category === cat.name)
-          .slice(0, 4);
-      });
-      setCategoryNews(categoryGroups);
-    } catch (error) {
-      console.error('Error fetching articles:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,19 +87,9 @@ const HomePage: React.FC = () => {
     }, 5000);
   };
 
-  const formatDate = (date: any) => {
+  const formatTimeAgo = (date: string) => {
     if (!date) return '';
-    const dateObj = date.toDate ? date.toDate() : new Date(date);
-    return dateObj.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const formatTimeAgo = (date: any) => {
-    if (!date) return '';
-    const dateObj = date.toDate ? date.toDate() : new Date(date);
+    const dateObj = new Date(date);
     const seconds = Math.floor((new Date().getTime() - dateObj.getTime()) / 1000);
 
     if (seconds < 60) return 'Just now';
@@ -245,19 +188,8 @@ const HomePage: React.FC = () => {
             </div>
           )}
 
-
-          {/* Loading State */}
-          {loading && (
-            <div className="min-h-[60vh] flex items-center justify-center">
-              <div className="flex flex-col items-center space-y-4">
-                <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-secondary-500 font-medium animate-pulse">Loading latest news...</p>
-              </div>
-            </div>
-          )}
-
-          {/* Empty State - Only show if no content at all AND not loading */}
-          {!loading && latestNews.length === 0 && featuredArticles.length === 0 && breakingNews.length === 0 && (
+          {/* Empty State - Only show if no content at all */}
+          {latestNews.length === 0 && featuredArticles.length === 0 && breakingNews.length === 0 && (
             <section className="container-custom py-20">
               <div className="max-w-2xl mx-auto text-center">
                 <div className="w-24 h-24 bg-secondary-100 dark:bg-secondary-800 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -267,7 +199,7 @@ const HomePage: React.FC = () => {
                   No Articles Found
                 </h2>
                 <p className="text-secondary-600 dark:text-secondary-400">
-                  We couldn't find any articles at the moment. Please check back later or verify your internet connection.
+                  We couldn't find any articles at the moment. Please check back later.
                 </p>
               </div>
             </section>
@@ -585,6 +517,98 @@ const HomePage: React.FC = () => {
       </Layout>
     </>
   );
+};
+
+export const getStaticProps: GetStaticProps = async () => {
+  try {
+    const newsRef = collection(db, 'news');
+    // We fetch all published news first. Sorting in JS is often safer/easier if the collection isn't huge
+    // to avoid index issues, but for production with many docs, use orderBy/limit.
+    // Given the constraints (we want correct sorting), let's try to query efficiently
+    // provided indices exist.
+    const q = query(
+      newsRef,
+      where('status', '==', 'published')
+      // orderBy('createdAt', 'desc') // Requires index, but best practice
+    );
+
+    const snapshot = await getDocs(q);
+    const articles: Article[] = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      articles.push({
+        id: doc.id,
+        title: data.title || '',
+        summary: data.summary || '',
+        content: data.content || '',
+        imageUrl: data.imageUrl || '',
+        category: data.category || '',
+        author: data.author || '',
+        slug: data.slug || '',
+        status: data.status,
+        featured: data.featured || false,
+        isBreaking: data.isBreaking || false,
+        isTrending: data.isTrending || false,
+        isPinned: data.isPinned || false,
+        homepagePosition: data.homepagePosition || 0,
+        views: data.views || 0,
+        likes: data.likes || 0,
+        tags: data.tags || [],
+        keywords: data.keywords || '',
+        metaDescription: data.metaDescription || '',
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+        publishedAt: data.publishedAt?.toDate ? data.publishedAt.toDate().toISOString() : null,
+      });
+    });
+
+    // Sort in memory to avoid missing index errors during this critical fix
+    articles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    // Derived lists
+    const breakingNews = articles.filter(a => a.isBreaking);
+    const featuredArticles = articles.filter(a => a.featured).slice(0, 3);
+    const trending = articles.filter(a => a.isTrending);
+    const trendingArticles = trending.length > 0 ? trending.slice(0, 5) : articles.slice(0, 5);
+    const pinnedArticles = articles.filter(a => a.isPinned);
+
+    // Latest news logic
+    const unpinnedArticles = articles.filter(a => !a.isPinned);
+    const orderedLatest = [...pinnedArticles, ...unpinnedArticles].slice(0, 12);
+
+    // Category grouping
+    const categoryNews: { [key: string]: Article[] } = {};
+    categories.slice(0, 4).forEach(cat => {
+      categoryNews[cat.name] = articles
+        .filter(a => a.category === cat.name)
+        .slice(0, 4);
+    });
+
+    return {
+      props: {
+        featuredArticles,
+        latestNews: orderedLatest,
+        trendingArticles,
+        breakingNews,
+        pinnedArticles,
+        categoryNews
+      },
+      revalidate: 60, // IRS: Revalidate every 60 seconds
+    };
+  } catch (error) {
+    console.error('Error in getStaticProps:', error);
+    return {
+      props: {
+        featuredArticles: [],
+        latestNews: [],
+        trendingArticles: [],
+        breakingNews: [],
+        pinnedArticles: [],
+        categoryNews: {}
+      },
+      revalidate: 60
+    };
+  }
 };
 
 export default HomePage;
