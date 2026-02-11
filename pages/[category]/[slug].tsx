@@ -239,14 +239,19 @@ const ArticlePage = () => {
     setShowShareMenu(false);
   };
 
-  const formatDate = (date: any) => {
+
+  const formatDateIST = (date: any) => {
     if (!date) return '';
     const dateObj = date.toDate ? date.toDate() : new Date(date);
-    return dateObj.toLocaleDateString('en-US', {
+    return dateObj.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
       year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Kolkata'
+    }) + ' IST';
   };
 
   const getCategoryIcon = (category: string) => {
@@ -540,18 +545,23 @@ const ArticlePage = () => {
                 </h1>
 
                 {/* Article Meta Info */}
-                <div className="flex flex-wrap items-center gap-6 text-secondary-600 dark:text-secondary-400 text-sm mb-8">
+                <div className="flex flex-col gap-2 text-secondary-600 dark:text-secondary-400 text-sm mb-8">
                   <div className="flex items-center space-x-2">
-                    <User size={16} />
-                    <span>By {article.author}</span>
+                    <span className="font-semibold text-secondary-900 dark:text-white text-base">By {article.author}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar size={16} />
-                    <span>{formatDate(article.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock size={16} />
-                    <span>{readingTime} min read</span>
+                  <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-secondary-500 dark:text-secondary-400">
+                    <span className="font-medium">Published: {formatDateIST(article.createdAt)}</span>
+                    {article.updatedAt && (
+                      <>
+                        <span className="hidden sm:inline mx-1 text-secondary-300 dark:text-secondary-600">|</span>
+                        <span className="font-medium">Updated: {formatDateIST(article.updatedAt)}</span>
+                      </>
+                    )}
+                    <span className="hidden sm:inline mx-1 text-secondary-300 dark:text-secondary-600">|</span>
+                    <div className="flex items-center space-x-1">
+                      <Clock size={14} />
+                      <span>{readingTime} min read</span>
+                    </div>
                   </div>
                 </div>
 
@@ -771,7 +781,7 @@ const ArticlePage = () => {
                               {relatedArticle.title}
                             </h4>
                             <p className="text-xs text-secondary-500 dark:text-secondary-500 mt-1">
-                              {formatDate(relatedArticle.createdAt)}
+                              {formatDateIST(relatedArticle.createdAt)}
                             </p>
                           </div>
                         </div>
