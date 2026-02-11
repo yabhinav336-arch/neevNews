@@ -48,6 +48,8 @@ interface Article {
   slug: string;
   views: number;
   likes: number;
+  sourceUrl?: string;
+  sourceName?: string;
 }
 
 const ArticlePage = () => {
@@ -433,9 +435,42 @@ const ArticlePage = () => {
                 {/* Article Content */}
                 <div className="prose prose-lg dark:prose-invert max-w-none">
                   <div className="whitespace-pre-wrap text-secondary-800 dark:text-secondary-200 leading-relaxed text-lg">
-                    {article.content}
+                    {article.content.split(/(https?:\/\/[^\s]+)/g).map((part, index) => {
+                      if (part.match(/https?:\/\/[^\s]+/)) {
+                        return (
+                          <a
+                            key={index}
+                            href={part}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary-600 dark:text-primary-400 hover:underline break-all"
+                          >
+                            {part}
+                          </a>
+                        );
+                      }
+                      return part;
+                    })}
                   </div>
                 </div>
+
+                {/* Source Link */}
+                {article.sourceUrl && (
+                  <div className="mt-8 pt-4 border-t border-secondary-200 dark:border-secondary-700">
+                    <p className="text-sm text-secondary-600 dark:text-secondary-400">
+                      Source: {' '}
+                      <a
+                        href={article.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                      >
+                        {article.sourceName || 'Read Original Article'}
+                        <span className="inline-block ml-1">↗</span>
+                      </a>
+                    </p>
+                  </div>
+                )}
 
                 {/* Tags */}
                 {article.tags && article.tags.length > 0 && (
