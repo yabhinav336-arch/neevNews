@@ -55,6 +55,7 @@ const HomePage: React.FC = () => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchArticles();
@@ -62,6 +63,7 @@ const HomePage: React.FC = () => {
 
   const fetchArticles = async () => {
     try {
+      setLoading(true);
       // Fetch from cache (only hits Firestore if cache expired)
       const allArticles = await getCachedArticles() as Article[];
 
@@ -106,6 +108,8 @@ const HomePage: React.FC = () => {
       setCategoryNews(categoryGroups);
     } catch (error) {
       console.error('Error fetching articles:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -241,8 +245,19 @@ const HomePage: React.FC = () => {
             </div>
           )}
 
-          {/* Empty State - Only show if no content at all */}
-          {latestNews.length === 0 && featuredArticles.length === 0 && breakingNews.length === 0 && (
+
+          {/* Loading State */}
+          {loading && (
+            <div className="min-h-[60vh] flex items-center justify-center">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-secondary-500 font-medium animate-pulse">Loading latest news...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Empty State - Only show if no content at all AND not loading */}
+          {!loading && latestNews.length === 0 && featuredArticles.length === 0 && breakingNews.length === 0 && (
             <section className="container-custom py-20">
               <div className="max-w-2xl mx-auto text-center">
                 <div className="w-24 h-24 bg-secondary-100 dark:bg-secondary-800 rounded-full flex items-center justify-center mx-auto mb-6">
