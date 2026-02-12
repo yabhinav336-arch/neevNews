@@ -254,6 +254,18 @@ const ArticlePage = () => {
     }) + ' IST';
   };
 
+  const shouldShowUpdated = (created: any, updated: any) => {
+    if (!updated) return false;
+    const createdDate = created.toDate ? created.toDate() : new Date(created);
+    const updatedDate = updated.toDate ? updated.toDate() : new Date(updated);
+
+    // Check if invalid dates
+    if (isNaN(createdDate.getTime()) || isNaN(updatedDate.getTime())) return false;
+
+    // Show updated if difference is more than 15 minutes (900000 ms)
+    return updatedDate.getTime() - createdDate.getTime() > 900000;
+  };
+
   const getCategoryIcon = (category: string) => {
     const categoryData = categories.find(cat => cat.name === category);
     return categoryData?.icon || '📰';
@@ -551,7 +563,7 @@ const ArticlePage = () => {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-secondary-500 dark:text-secondary-400">
                     <span className="font-medium">Published: {formatDateIST(article.createdAt)}</span>
-                    {article.updatedAt && (
+                    {shouldShowUpdated(article.createdAt, article.updatedAt) && (
                       <>
                         <span className="hidden sm:inline mx-1 text-secondary-300 dark:text-secondary-600">|</span>
                         <span className="font-medium">Updated: {formatDateIST(article.updatedAt)}</span>

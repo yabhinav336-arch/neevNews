@@ -150,6 +150,7 @@ export const popularArticles = [
 
 // Helper function to get category slug from category name
 export const getCategorySlug = (categoryName: string): string => {
+  if (!categoryName) return 'general';
   const category = categories.find(cat => cat.name === categoryName);
   return category?.slug || categoryName.toLowerCase().replace(/\s+/g, '-');
 };

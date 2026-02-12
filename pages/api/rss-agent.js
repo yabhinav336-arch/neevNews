@@ -125,7 +125,7 @@ function extractImage(item) {
 function extractKeywords(title, description) {
   const text = `${title} ${description}`.toLowerCase();
   const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
-  
+
   const words = text
     .replace(/[^\w\s]/g, ' ')
     .split(/\s+/)
@@ -162,7 +162,7 @@ function normalizeArticle(item, source) {
       .replace(/&gt;/g, '>')
       .trim();
 
-    const articleContent = cleanDescription.length > 0 
+    const articleContent = cleanDescription.length > 0
       ? `${cleanDescription.substring(0, 500)}\n\n---\n\n*This article was automatically sourced from RSS feeds. [Read original article](${link})*`
       : `${title}\n\n*This article was automatically sourced from RSS feeds. [Read original article](${link})*`;
 
@@ -181,7 +181,7 @@ function normalizeArticle(item, source) {
       slug: slug,
       createdAt: Timestamp.fromDate(pubDate),
       publishedAt: Timestamp.fromDate(pubDate),
-      updatedAt: Timestamp.now(),
+      updatedAt: Timestamp.fromDate(pubDate),
       views: 0,
       likes: 0,
       sourceUrl: link,
@@ -197,7 +197,7 @@ function normalizeArticle(item, source) {
 async function fetchFromSource(source) {
   try {
     const feed = await parser.parseURL(source.url);
-    
+
     if (!feed.items || feed.items.length === 0) {
       return [];
     }
@@ -223,7 +223,7 @@ async function isDuplicate(article) {
       limit(1)
     );
     const slugSnapshot = await getDocs(slugQuery);
-    
+
     if (!slugSnapshot.empty) {
       return true;
     }
@@ -236,7 +236,7 @@ async function isDuplicate(article) {
         limit(1)
       );
       const sourceSnapshot = await getDocs(sourceQuery);
-      
+
       if (!sourceSnapshot.empty) {
         return true;
       }
@@ -253,13 +253,13 @@ async function checkDailyLimit() {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const todayQuery = query(
       collection(db, 'news'),
       where('createdAt', '>=', Timestamp.fromDate(today)),
       where('isRssSource', '==', true)
     );
-    
+
     const snapshot = await getDocs(todayQuery);
     return snapshot.size < MAX_ARTICLES_PER_DAY;
   } catch (error) {
@@ -282,7 +282,7 @@ export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
-  
+
   // Only allow GET requests (for cron jobs)
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -370,7 +370,7 @@ export default async function handler(req, res) {
     for (const article of uniqueArticles) {
       const category = article.category;
       categoryCounts[category] = (categoryCounts[category] || 0) + 1;
-      
+
       if (categoryCounts[category] <= MAX_PER_CATEGORY_PER_RUN) {
         articlesToSave.push(article);
       } else {
