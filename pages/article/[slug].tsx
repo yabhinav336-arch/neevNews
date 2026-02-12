@@ -457,24 +457,48 @@ const ArticlePage = () => {
 
                 {/* Article Content */}
                 <div className="prose prose-lg dark:prose-invert max-w-none">
-                  <div className="whitespace-pre-wrap text-secondary-800 dark:text-secondary-200 leading-relaxed text-lg">
-                    {article.content.split(/(https?:\/\/[^\s]+)/g).map((part, index) => {
-                      if (part.match(/https?:\/\/[^\s]+/)) {
-                        return (
-                          <a
-                            key={index}
-                            href={part}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary-600 dark:text-primary-400 hover:underline break-all"
-                          >
-                            {part}
-                          </a>
-                        );
-                      }
-                      return part;
-                    })}
-                  </div>
+                  {article.content.split('\n').map((line, lineIdx) => {
+                    // Render ## headings as H2 elements
+                    const h2Match = line.match(/^## (.+)$/);
+                    if (h2Match) {
+                      return (
+                        <h2
+                          key={lineIdx}
+                          className="text-2xl font-bold text-secondary-900 dark:text-white mt-8 mb-4 font-serif"
+                        >
+                          {h2Match[1]}
+                        </h2>
+                      );
+                    }
+
+                    // Skip empty lines (they're just spacing)
+                    if (line.trim() === '') return null;
+
+                    // Render normal text with URL detection
+                    return (
+                      <p
+                        key={lineIdx}
+                        className="text-secondary-800 dark:text-secondary-200 leading-relaxed text-lg mb-4"
+                      >
+                        {line.split(/(https?:\/\/[^\s]+)/g).map((part, partIdx) => {
+                          if (part.match(/https?:\/\/[^\s]+/)) {
+                            return (
+                              <a
+                                key={partIdx}
+                                href={part}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary-600 dark:text-primary-400 hover:underline break-all"
+                              >
+                                {part}
+                              </a>
+                            );
+                          }
+                          return part;
+                        })}
+                      </p>
+                    );
+                  })}
                 </div>
 
                 {/* Source Link */}

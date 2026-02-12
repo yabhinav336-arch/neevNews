@@ -4,7 +4,7 @@
  * - Uses ONLY the RSS content provided
  * - Does NOT invent new facts or speculate
  * - Writes in neutral, simple, human-like news tone
- * - 200–400 word article body
+ * - 250–450 word article body with 1-2 H2 subheadings
  * - Returns: headline, summary, article body
  *
  * Configuration (environment variables):
@@ -46,7 +46,14 @@ Do not use emojis. Do not insert your own opinions.
 Add:
 - Headline
 - 2-3 line summary
-- Full article (200–400 words)
+- Full article (250–450 words)
+
+IMPORTANT FORMATTING RULES for the article body:
+- Include exactly 1 or 2 subheadings inside the article body.
+- Format each subheading on its own line starting with "## " (two hashes and a space), followed by the subheading text.
+- Leave a blank line before and after each subheading.
+- Example: "## Key Developments" or "## What Happens Next"
+- The subheadings should logically break the article into sections.
 
 Make sure to naturally mention the original source in the article body, like:
 "According to a report by ${article.sourceName}, ..." or similar phrasing.
@@ -80,7 +87,7 @@ Respond ONLY with valid JSON in this exact shape:
       body: JSON.stringify({
         model: OPENAI_MODEL,
         temperature: 0.4,
-        max_tokens: 900,
+        max_tokens: 1100,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },

@@ -150,7 +150,9 @@ function normalizeArticle(item, source) {
     const description = item.contentSnippet || item.content || item.summary || '';
     const summary = generateSummary(description, title);
     const imageUrl = extractImage(item) || DEFAULT_IMAGE;
-    const pubDate = item.pubDate ? new Date(item.pubDate) : new Date();
+    const sourcePubDate = item.pubDate ? new Date(item.pubDate) : new Date();
+    const sitePubDate = new Date(); // Current time on this server
+
     const slug = generateSlug(title);
 
     // Clean description for content
@@ -179,9 +181,10 @@ function normalizeArticle(item, source) {
       featured: false,
       status: 'published',
       slug: slug,
-      createdAt: Timestamp.fromDate(pubDate),
-      publishedAt: Timestamp.fromDate(pubDate),
-      updatedAt: Timestamp.fromDate(pubDate),
+      createdAt: Timestamp.fromDate(sitePubDate),
+      publishedAt: Timestamp.fromDate(sitePubDate),
+      updatedAt: Timestamp.fromDate(sitePubDate),
+      sourcePublishedAt: Timestamp.fromDate(sourcePubDate), // Preserve original date
       views: 0,
       likes: 0,
       sourceUrl: link,
