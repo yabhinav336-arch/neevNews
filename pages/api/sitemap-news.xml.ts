@@ -57,7 +57,7 @@ ${recentArticles
       <news:keywords><![CDATA[${article.keywords || article.category}]]></news:keywords>
     </news:news>
     ${article.imageUrl ? `<image:image>
-      <image:loc>${article.imageUrl}</image:loc>
+      <image:loc>${article.imageUrl.replace(/&/g, '&amp;')}</image:loc>
       <image:title><![CDATA[${article.title}]]></image:title>
       <image:caption><![CDATA[${article.summary}]]></image:caption>
     </image:image>` : ''}
