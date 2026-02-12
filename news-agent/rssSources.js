@@ -121,8 +121,8 @@ module.exports = {
       maxPerRun: 5,
     },
     {
-      name: 'WHO Disease Outbreak News',
-      url: 'https://www.who.int/feeds/entity/csr/don/en/rss.xml',
+      name: 'BBC Health',
+      url: 'https://feeds.bbci.co.uk/news/health/rss.xml',
       category: 'Health',
       maxPerRun: 4,
     },
