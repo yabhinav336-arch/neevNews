@@ -5,9 +5,9 @@ import { getArticleUrl } from '../../utils/data';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Fetch recent published articles (last 14 days for initial validation)
+    // Fetch recent published articles (last 2 days for Google News)
     const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 14);
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
     const articlesRef = collection(db, 'news');
     const q = query(
