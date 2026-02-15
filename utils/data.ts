@@ -158,5 +158,5 @@ export const getCategorySlug = (categoryName: string): string => {
 // Helper function to get article URL path
 export const getArticleUrl = (article: { category: string; slug: string }): string => {
   const categorySlug = getCategorySlug(article.category);
-  return `/${categorySlug}/${article.slug}`;
+  return `/${categorySlug}/${article.slug}/`;
 };

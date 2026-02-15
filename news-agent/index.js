@@ -14,6 +14,9 @@
  * - Auto-publish articles
  */
 
+// Load .env from project root (for OPENAI_API_KEY etc.)
+require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env') });
+
 // Import Firebase admin SDK (we'll use the client SDK in a special way)
 const { initializeApp } = require('firebase/app');
 const { getFirestore } = require('firebase/firestore');

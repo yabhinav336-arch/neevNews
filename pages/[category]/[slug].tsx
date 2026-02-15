@@ -57,7 +57,7 @@ const getCategorySlug = (categoryName: string): string => {
 // Helper function to get article URL
 const getArticleUrl = (article: Article): string => {
   const categorySlug = getCategorySlug(article.category);
-  return `/${categorySlug}/${article.slug}`;
+  return `/${categorySlug}/${article.slug}/`;
 };
 
 const ArticlePage = () => {
