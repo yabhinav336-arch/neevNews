@@ -4,7 +4,7 @@
  * This API route can be called by a cron service to fetch and publish news.
  * 
  * HOW TO USE:
- * 1. Deploy your site to Netlify/Vercel
+ * 1. Deploy your site to Netlify/Vercel/Cloudflare
  * 2. Set up a cron job to call: https://neevnews.com/api/rss-agent
  * 3. Cron runs every 30 minutes automatically
  * 
@@ -13,24 +13,17 @@
 
 import { collection, addDoc, getDocs, query, where, limit, Timestamp } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
-import Parser from 'rss-parser';
+import { NextResponse } from 'next/server';
 
-// Initialize RSS Parser
-const parser = new Parser({
-  timeout: 10000,
-  customFields: {
-    item: ['media:content', 'enclosure'],
-  },
-});
+export const runtime = 'edge';
 
 // RSS Sources Configuration
 // IMPORTANT: Categories must match your website categories exactly!
-// Available: Politics, Technology, Business, Science, Health, Sports, Entertainment, World
 const RSS_SOURCES = [
   {
     name: 'Google News - India',
     url: 'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en',
-    category: 'Politics', // Changed from 'General' to 'Politics'
+    category: 'Politics',
     maxPerRun: 2,
   },
   {
@@ -70,6 +63,63 @@ const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1504711434969-e33886168
 const MAX_ARTICLES_PER_DAY = 40;
 const MAX_PER_CATEGORY_PER_RUN = 2;
 
+// Simple Regex-based RSS Parser for Edge Compatibility
+async function parserss(url) {
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+
+    // Basic regex to find items
+    const items = [];
+    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+    let match;
+
+    while ((match = itemRegex.exec(text)) !== null) {
+      const itemContent = match[1];
+      const getTag = (tag) => {
+        const regex = new RegExp(`<${tag}[^>]*>(.*?)</${tag}>`, 'is');
+        const m = itemContent.match(regex);
+        return m ? m[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1') : '';
+      };
+
+      const title = getTag('title');
+      const link = getTag('link');
+      const pubDate = getTag('pubDate');
+      const description = getTag('description');
+      const content = getTag('content:encoded') || description;
+
+      // Extract media/enclosure
+      let imageUrl = null;
+      const mediaMatch = itemContent.match(/<media:content[^>]+url="([^"]+)"/i);
+      if (mediaMatch) imageUrl = mediaMatch[1];
+
+      if (!imageUrl) {
+        const enclosureMatch = itemContent.match(/<enclosure[^>]+url="([^"]+)"/i);
+        if (enclosureMatch) imageUrl = enclosureMatch[1];
+      }
+
+      if (!imageUrl) {
+        const imgMatch = description.match(/<img[^>]+src="([^"]+)"/i);
+        if (imgMatch) imageUrl = imgMatch[1];
+      }
+
+      items.push({
+        title,
+        link,
+        pubDate,
+        content,
+        summary: description,
+        imageUrl
+      });
+    }
+
+    return { items };
+  } catch (e) {
+    console.error(`Error parsing RSS from ${url}:`, e);
+    return { items: [] };
+  }
+}
+
 // Helper Functions
 function generateSlug(title) {
   return title
@@ -107,21 +157,6 @@ function generateSummary(description, title) {
   return truncated + '...';
 }
 
-function extractImage(item) {
-  if (item.enclosure && item.enclosure.type && item.enclosure.type.startsWith('image/')) {
-    return item.enclosure.url;
-  }
-
-  if (item.content) {
-    const imgMatch = item.content.match(/<img[^>]+src="([^"]+)"/i);
-    if (imgMatch && imgMatch[1]) {
-      return imgMatch[1];
-    }
-  }
-
-  return null;
-}
-
 function extractKeywords(title, description) {
   const text = `${title} ${description}`.toLowerCase();
   const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
@@ -147,9 +182,9 @@ function normalizeArticle(item, source) {
       return null;
     }
 
-    const description = item.contentSnippet || item.content || item.summary || '';
+    const description = item.content || item.summary || '';
     const summary = generateSummary(description, title);
-    const imageUrl = extractImage(item) || DEFAULT_IMAGE;
+    const imageUrl = item.imageUrl || DEFAULT_IMAGE;
     const sourcePubDate = item.pubDate ? new Date(item.pubDate) : new Date();
     const sitePubDate = new Date(); // Current time on this server
 
@@ -199,7 +234,7 @@ function normalizeArticle(item, source) {
 
 async function fetchFromSource(source) {
   try {
-    const feed = await parser.parseURL(source.url);
+    const feed = await parserss(source.url);
 
     if (!feed.items || feed.items.length === 0) {
       return [];
@@ -281,20 +316,17 @@ async function saveArticle(article) {
   }
 }
 
-export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
+export default async function handler(req) {
+  // CORS Headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET',
+  };
 
   // Only allow GET requests (for cron jobs)
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers });
   }
-
-  // Optional: Add a secret key for security
-  // if (req.query.key !== process.env.RSS_AGENT_KEY) {
-  //   return res.status(401).json({ error: 'Unauthorized' });
-  // }
 
   const startTime = Date.now();
   const results = {
@@ -309,26 +341,19 @@ export default async function handler(req, res) {
   };
 
   try {
-    console.log('🚀 RSS Agent started at', new Date().toISOString());
-
     // Step 1: Check daily limit
-    console.log('📊 Checking daily limit...');
     const canPublish = await checkDailyLimit();
     if (!canPublish) {
       results.message = 'Daily limit reached';
-      console.log('⚠️  Daily limit reached, skipping fetch');
-      return res.status(200).json(results);
+      return NextResponse.json(results, { status: 200, headers });
     }
-    console.log('✅ Daily limit check passed');
 
     // Step 2: Fetch from all sources
-    console.log(`📡 Fetching from ${RSS_SOURCES.length} RSS sources...`);
     const allArticles = [];
     for (const source of RSS_SOURCES) {
       try {
         const articles = await fetchFromSource(source);
         allArticles.push(...articles);
-        console.log(`   ✅ ${source.name}: ${articles.length} articles`);
       } catch (error) {
         console.error(`   ❌ ${source.name}: ${error.message}`);
       }
@@ -338,11 +363,10 @@ export default async function handler(req, res) {
 
     if (allArticles.length === 0) {
       results.message = 'No articles fetched';
-      return res.status(200).json(results);
+      return NextResponse.json(results, { status: 200, headers });
     }
 
     // Step 3: Filter duplicates
-    console.log(`🔍 Checking ${allArticles.length} articles for duplicates...`);
     const uniqueArticles = [];
     for (const article of allArticles) {
       try {
@@ -353,17 +377,15 @@ export default async function handler(req, res) {
           results.skipped++;
         }
       } catch (error) {
-        console.error(`   ⚠️  Error checking duplicate: ${error.message}`);
         results.skipped++;
       }
     }
-    console.log(`✅ Found ${uniqueArticles.length} unique articles`);
 
     results.unique = uniqueArticles.length;
 
     if (uniqueArticles.length === 0) {
       results.message = 'All articles are duplicates';
-      return res.status(200).json(results);
+      return NextResponse.json(results, { status: 200, headers });
     }
 
     // Step 4: Apply category limits
@@ -396,24 +418,19 @@ export default async function handler(req, res) {
         results.errors++;
       }
 
-      // Small delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Removed sleep to rely on Promise execution
     }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
     results.message = `Completed in ${duration}s. Saved ${results.saved} articles.`;
 
-    console.log('✅ RSS Agent completed:', results);
-
-    return res.status(200).json(results);
+    return NextResponse.json(results, { status: 200, headers });
 
   } catch (error) {
     console.error('❌ RSS Agent fatal error:', error);
-    console.error('Error stack:', error.stack);
     results.success = false;
     results.message = error.message || 'Unknown error occurred';
-    results.error = process.env.NODE_ENV === 'development' ? error.stack : undefined;
-    return res.status(500).json(results);
+    return NextResponse.json(results, { status: 500, headers });
   }
 }
 

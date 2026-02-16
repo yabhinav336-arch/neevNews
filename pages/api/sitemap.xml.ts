@@ -1,15 +1,17 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 import { categories, getArticleUrl } from '../../utils/data';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export const runtime = 'edge';
+
+export default async function handler(req: NextRequest) {
   try {
     // Fetch all published articles
     const articlesRef = collection(db, 'news');
     const q = query(articlesRef, where('status', '==', 'published'));
     const querySnapshot = await getDocs(q);
-    
+
     const articles = querySnapshot.docs.map(doc => ({
       ...doc.data(),
       id: doc.id
@@ -38,27 +40,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   <!-- Category Pages -->
 ${categories
-  .map(
-    category => `  <url>
+        .map(
+          category => `  <url>
     <loc>${baseUrl}/category/${category.slug}</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>`
-  )
-  .join('\n')}
+        )
+        .join('\n')}
 
   <!-- Article Pages -->
 ${articles
-  .map((article: any) => {
-    const lastmod = article.updatedAt?.toDate 
-      ? article.updatedAt.toDate() 
-      : article.createdAt?.toDate 
-      ? article.createdAt.toDate() 
-      : new Date();
+        .map((article: any) => {
+          const lastmod = article.updatedAt?.toDate
+            ? article.updatedAt.toDate()
+            : article.createdAt?.toDate
+              ? article.createdAt.toDate()
+              : new Date();
 
-    const articleUrl = getArticleUrl(article);
-    return `  <url>
+          const articleUrl = getArticleUrl(article);
+          return `  <url>
     <loc>${baseUrl}${articleUrl}</loc>
     <lastmod>${lastmod.toISOString()}</lastmod>
     <changefreq>daily</changefreq>
@@ -68,16 +70,20 @@ ${articles
       <image:title><![CDATA[${article.title}]]></image:title>
     </image:image>` : ''}
   </url>`;
-  })
-  .join('\n')}
+        })
+        .join('\n')}
 </urlset>`;
 
-    res.setHeader('Content-Type', 'application/xml');
-    res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=300');
-    res.status(200).send(sitemap);
+    return new NextResponse(sitemap, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=300',
+      },
+    });
   } catch (error) {
     console.error('Error generating sitemap:', error);
-    res.status(500).send('Error generating sitemap');
+    return new NextResponse('Error generating sitemap', { status: 500 });
   }
 }
 

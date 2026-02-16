@@ -1,11 +1,13 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../../utils/firebase';
 import { getArticleUrl } from '../../../utils/data';
 
+export const runtime = 'edge';
+
 // Specialized RSS Feed for Google Publisher Center
 // Follows strict RSS 2.0 specifications with full content
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextRequest) {
     try {
         const articlesRef = collection(db, 'news');
         // Fetch last 50 published articles
@@ -90,16 +92,19 @@ ${articles
   </channel>
 </rss>`;
 
-        res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
-        // Cache for 15 minutes to ensure freshness for Google News
-        res.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=600');
-        res.status(200).send(rssFeed);
+        return new NextResponse(rssFeed, {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/rss+xml; charset=utf-8',
+                'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=600',
+            },
+        });
     } catch (error: any) {
         console.error('Error generating Google News feed:', error);
-        res.status(500).json({
+        return NextResponse.json({
             error: 'Error generating feed',
             message: error.message,
             stack: error.stack
-        });
+        }, { status: 500 });
     }
 }

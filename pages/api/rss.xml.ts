@@ -1,9 +1,11 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 import { getArticleUrl } from '../../utils/data';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export const runtime = 'edge';
+
+export default async function handler(req: NextRequest) {
   try {
     const articlesRef = collection(db, 'news');
     const q = query(
@@ -12,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       orderBy('createdAt', 'desc'),
       limit(50)
     );
-    
+
     const querySnapshot = await getDocs(q);
     const articles = querySnapshot.docs.map(doc => ({
       ...doc.data(),
@@ -43,13 +45,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       <link>https://neevnews.com</link>
     </image>
 ${articles
-  .map((article: any) => {
-    const pubDate = article.createdAt?.toDate 
-      ? article.createdAt.toDate() 
-      : new Date(article.createdAt);
-    
-    const articleUrl = getArticleUrl(article);
-    return `    <item>
+        .map((article: any) => {
+          const pubDate = article.createdAt?.toDate
+            ? article.createdAt.toDate()
+            : new Date(article.createdAt);
+
+          const articleUrl = getArticleUrl(article);
+          return `    <item>
       <title><![CDATA[${article.title}]]></title>
       <link>https://neevnews.com${articleUrl}</link>
       <guid isPermaLink="true">https://neevnews.com${articleUrl}</guid>
@@ -64,17 +66,21 @@ ${articles
       </media:content>` : ''}
       ${article.tags ? article.tags.map((tag: string) => `<category><![CDATA[${tag}]]></category>`).join('\n      ') : ''}
     </item>`;
-  })
-  .join('\n')}
+        })
+        .join('\n')}
   </channel>
 </rss>`;
 
-    res.setHeader('Content-Type', 'application/xml');
-    res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=300');
-    res.status(200).send(rssFeed);
+    return new NextResponse(rssFeed, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=300',
+      },
+    });
   } catch (error) {
     console.error('Error generating RSS feed:', error);
-    res.status(500).send('Error generating RSS feed');
+    return new NextResponse('Error generating RSS feed', { status: 500 });
   }
 }
 

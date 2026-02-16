@@ -1,9 +1,11 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 import { getArticleUrl } from '../../utils/data';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export const runtime = 'edge';
+
+export default async function handler(req: NextRequest) {
   try {
     // Fetch recent published articles (last 2 days for Google News)
     const twoDaysAgo = new Date();
@@ -69,12 +71,16 @@ ${recentArticles
         .join('\n')}
 </urlset>`;
 
-    res.setHeader('Content-Type', 'text/xml');
-    res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=300');
-    res.status(200).send(sitemap);
+    return new NextResponse(sitemap, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/xml',
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=300',
+      },
+    });
   } catch (error) {
     console.error('Error generating news sitemap:', error);
-    res.status(500).send('Error generating sitemap');
+    return new NextResponse('Error generating sitemap', { status: 500 });
   }
 }
 
