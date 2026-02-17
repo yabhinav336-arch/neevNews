@@ -9,8 +9,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['Source Serif Pro', 'serif'],
+        sans: ['Inter', 'sans-serif'],
+        serif: ['Merriweather', 'serif'],
       },
       colors: {
         primary: {

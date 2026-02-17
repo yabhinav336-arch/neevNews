@@ -15,6 +15,9 @@ const { db } = require('./firebaseClient');
 
 const CACHE_DIR = path.join(__dirname, '.cache');
 const CACHE_FILE = path.join(CACHE_DIR, 'published.json');
+// Cap title history so we don't block new stories that are similar to very old ones
+// Reduced to allow more articles through for daily 80 article target
+const MAX_TITLES_FOR_SIMILARITY = 1500;
 
 // ------------------------------------------------------------------
 // Cache helpers
@@ -91,6 +94,8 @@ async function filterDuplicates(articles) {
   console.log('\n🔍 Checking for duplicates (local cache)...\n');
 
   const cache = await seedCacheIfEmpty();
+  // Use only recent titles for similarity check so new stories can get through
+  const recentTitles = cache.titles.slice(-MAX_TITLES_FOR_SIMILARITY);
   const slugSet = new Set(cache.slugs);
   const urlSet = new Set(cache.sourceUrls);
 
@@ -98,10 +103,12 @@ async function filterDuplicates(articles) {
   let dupCount = 0;
 
   for (const article of articles) {
+    // Lower similarity threshold (0.85 instead of 0.9) to allow more articles through
+    // This ensures we can consistently publish 80 articles per day
     const isDup =
       slugSet.has(article.slug) ||
       (article.sourceUrl && urlSet.has(article.sourceUrl)) ||
-      cache.titles.some((t) => calculateSimilarity(article.title.toLowerCase().trim(), t) > 0.9);
+      recentTitles.some((t) => calculateSimilarity(article.title.toLowerCase().trim(), t) > 0.85);
 
     if (isDup) {
       console.log(`   ⏭️  Duplicate: ${article.title.substring(0, 55)}...`);
@@ -120,7 +127,10 @@ async function filterDuplicates(articles) {
     }
   }
 
-  // Persist updated cache to disk
+  // Keep title history capped so new stories can be published over time
+  if (cache.titles.length > MAX_TITLES_FOR_SIMILARITY) {
+    cache.titles = cache.titles.slice(-MAX_TITLES_FOR_SIMILARITY);
+  }
   saveCache(cache);
 
   console.log(`\n📊 Dedup: ${articles.length} checked, ${dupCount} duplicates, ${uniqueArticles.length} new\n`);

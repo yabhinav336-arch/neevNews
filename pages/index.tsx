@@ -213,7 +213,7 @@ const HomePage: React.FC<HomePageProps> = ({
                   {/* Main Featured Article */}
                   <div className="lg:col-span-2">
                     <Link href={getArticleUrl(featuredArticles[0])} className="group">
-                      <div className="relative aspect-video w-full overflow-hidden rounded-xl">
+                      <div className="relative aspect-[4/3] md:aspect-video w-full overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
                         {/* Hero Image */}
                         <Image
                           src={getImageUrl(featuredArticles[0].imageUrl)}
@@ -223,37 +223,33 @@ const HomePage: React.FC<HomePageProps> = ({
                           priority
                           sizes="(max-width: 768px) 100vw, 50vw"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-                        {/* Badges */}
-                        <div className="absolute top-2 left-2 right-2 md:top-4 md:left-4 md:right-4 flex flex-wrap gap-1.5 md:gap-2">
+                        {/* Badges - Repositioned */}
+                        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
                           {featuredArticles[0].isBreaking && (
-                            <span className="px-2 py-0.5 md:px-3 md:py-1 bg-red-600 text-white text-[10px] md:text-xs font-bold rounded-full animate-pulse flex items-center space-x-1">
+                            <span className="px-2 py-0.5 bg-red-600 text-white text-[10px] uppercase font-bold tracking-wider rounded-sm animate-pulse flex items-center space-x-1 shadow-sm">
                               <Zap size={10} className="fill-current" />
                               <span>BREAKING</span>
                             </span>
                           )}
-                          <span className="px-2 py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] md:text-xs font-bold rounded-full flex items-center space-x-1">
-                            <Flame size={10} className="fill-current" />
-                            <span>FEATURED</span>
-                          </span>
-                          <span className={`px-2 py-0.5 md:px-3 md:py-1 text-white text-[10px] md:text-xs font-medium rounded-full ${getCategoryColor(featuredArticles[0].category)}`}>
+                          <span className={`px-2 py-0.5 text-white text-[10px] uppercase font-bold tracking-wider rounded-sm shadow-sm ${getCategoryColor(featuredArticles[0].category)}`}>
                             {featuredArticles[0].category}
                           </span>
                         </div>
 
                         {/* Hero Content */}
                         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
-                          <h2 className="text-xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-4 font-serif leading-tight">
+                          <h2 className="text-xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-4 font-serif leading-tight drop-shadow-md">
                             {featuredArticles[0].title}
                           </h2>
-                          <p className="text-gray-200 line-clamp-2 md:line-clamp-3 mb-2 md:mb-4 text-xs md:text-base hidden sm:block">
+                          <p className="text-gray-200 line-clamp-2 md:line-clamp-3 mb-2 md:mb-4 text-xs md:text-base hidden sm:block font-light">
                             {featuredArticles[0].summary}
                           </p>
                           <div className="flex items-center text-gray-300 text-[10px] md:text-sm space-x-4">
                             <span className="flex items-center space-x-1.5">
                               <User size={12} className="md:w-4 md:h-4" />
-                              <span>{featuredArticles[0].author}</span>
+                              <span className="font-medium uppercase tracking-wide text-[10px]">{featuredArticles[0].author}</span>
                             </span>
                             <span className="flex items-center space-x-1.5">
                               <Clock size={12} className="md:w-4 md:h-4" />
