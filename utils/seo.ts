@@ -1,5 +1,7 @@
 // SEO Utility Functions for NeevNews
 
+import { getCategorySlug } from './data';
+
 export interface ArticleSEO {
   title: string;
   description: string;
@@ -14,16 +16,26 @@ export interface ArticleSEO {
 }
 
 /**
+ * Generate the canonical URL for an article
+ */
+const getArticleCanonical = (article: ArticleSEO): string => {
+  const categorySlug = getCategorySlug(article.category);
+  return `https://neevnews.com/${categorySlug}/${article.slug}/`;
+};
+
+/**
  * Generate comprehensive meta tags for articles
  */
 export const generateArticleMetaTags = (article: ArticleSEO) => {
+  const canonicalUrl = getArticleCanonical(article);
+
   return {
     title: `${article.title} | NeevNews`,
     description: article.description,
-    canonical: `https://neevnews.com/article/${article.slug}`,
+    canonical: canonicalUrl,
     openGraph: {
       type: 'article',
-      url: `https://neevnews.com/article/${article.slug}`,
+      url: canonicalUrl,
       title: article.title,
       description: article.description,
       images: [
@@ -85,6 +97,8 @@ export const generateArticleMetaTags = (article: ArticleSEO) => {
  * Generate NewsArticle Schema.org structured data
  */
 export const generateNewsArticleSchema = (article: ArticleSEO) => {
+  const canonicalUrl = getArticleCanonical(article);
+
   return {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
@@ -124,7 +138,7 @@ export const generateNewsArticleSchema = (article: ArticleSEO) => {
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://neevnews.com/article/${article.slug}`,
+      '@id': canonicalUrl,
     },
     articleSection: article.category,
     keywords: article.keywords,

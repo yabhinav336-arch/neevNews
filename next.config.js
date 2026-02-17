@@ -2,12 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Removed output: 'export' to enable dynamic routes
-  // Dynamic routes like [category]/[slug] require SSR
+  compress: true,
   trailingSlash: true,
+
   async rewrites() {
     return [
-      // Expose XML endpoints at root (crawl-friendly) while keeping /api disallowed in robots.txt
       { source: '/sitemap-news.xml', destination: '/api/sitemap-news.xml' },
       { source: '/sitemap-news.xml/', destination: '/api/sitemap-news.xml' },
       { source: '/server-sitemap.xml', destination: '/api/sitemap.xml' },
@@ -16,16 +15,28 @@ const nextConfig = {
       { source: '/rss.xml/', destination: '/api/rss.xml' },
     ];
   },
+
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+        ],
+      },
+    ];
+  },
+
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
+        hostname: '**',
       },
     ],
     formats: ['image/webp', 'image/avif'],

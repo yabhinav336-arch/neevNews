@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { NextSeo } from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,16 +15,18 @@ import {
   User,
   ArrowRight,
   ChevronRight,
+  ChevronDown,
   Flame,
   Zap,
-  Pin
+  Pin,
+  Loader2
 } from 'lucide-react';
 
 interface Article {
   id: string;
   title: string;
   summary: string;
-  content: string;
+  content?: string;
   imageUrl: string;
   category: string;
   author: string;
@@ -65,6 +67,17 @@ const HomePage: React.FC<HomePageProps> = ({
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState('');
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const handleLoadMore = useCallback(() => {
+    setIsLoadingMore(true);
+    // Small delay for a smoother UX feel
+    setTimeout(() => {
+      setVisibleCount(prev => prev + 12);
+      setIsLoadingMore(false);
+    }, 400);
+  }, []);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -384,7 +397,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-              {latestNews.map((article) => (
+              {latestNews.slice(0, visibleCount).map((article) => (
                 <article key={article.id} className="group">
                   <Link href={getArticleUrl(article)}>
                     <div className="card-hover overflow-hidden">
@@ -443,6 +456,38 @@ const HomePage: React.FC<HomePageProps> = ({
                 </article>
               ))}
             </div>
+
+            {/* Load More Button */}
+            {visibleCount < latestNews.length && (
+              <div className="flex justify-center mt-8 md:mt-12">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                  className="group flex items-center space-x-2 px-8 py-3 bg-white dark:bg-secondary-800 border-2 border-secondary-200 dark:border-secondary-700 rounded-full text-secondary-700 dark:text-secondary-300 font-semibold text-sm hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 dark:hover:border-primary-500 transition-all duration-300 shadow-sm hover:shadow-md"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>Loading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Load More Articles</span>
+                      <ChevronDown size={18} className="group-hover:translate-y-0.5 transition-transform duration-200" />
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* All loaded message */}
+            {visibleCount >= latestNews.length && latestNews.length > 12 && (
+              <div className="text-center mt-8">
+                <p className="text-sm text-secondary-500 dark:text-secondary-400">
+                  You've seen all {latestNews.length} articles
+                </p>
+              </div>
+            )}
           </section>
 
           {/* Category Sections */}
@@ -534,7 +579,6 @@ export const getStaticProps: GetStaticProps = async () => {
         id: doc.id,
         title: data.title || '',
         summary: data.summary || '',
-        content: data.content || '',
         imageUrl: data.imageUrl || '',
         category: data.category || '',
         author: data.author || '',
@@ -567,7 +611,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
     // Latest news logic
     const unpinnedArticles = articles.filter(a => !a.isPinned);
-    const orderedLatest = [...pinnedArticles, ...unpinnedArticles].slice(0, 12);
+    const orderedLatest = [...pinnedArticles, ...unpinnedArticles].slice(0, 60);
 
     // Category grouping
     const categoryNews: { [key: string]: Article[] } = {};

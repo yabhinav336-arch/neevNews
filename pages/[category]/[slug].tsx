@@ -276,233 +276,219 @@ const ArticlePage = () => {
     return categoryData?.color || 'bg-blue-500';
   };
 
-  if (loading) {
-    if (router.isFallback) {
-      return (
-        <Layout>
-          <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-secondary-600 dark:text-secondary-400">Loading article...</p>
-            </div>
-          </div>
-        </Layout>
-      );
-    }
-
-    if (loading) {
-      return (
-        <Layout>
-          <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-secondary-600 dark:text-secondary-400">Loading article...</p>
-            </div>
-          </div>
-        </Layout>
-      );
-    }
-
-    if (!article) {
-      return (
-        <Layout>
-          <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
-            <div className="text-center max-w-2xl mx-auto px-4">
-              <h1 className="text-3xl font-bold text-secondary-900 dark:text-white mb-4">Article Not Found</h1>
-              <div className="space-x-4">
-                <Link href="/" className="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
-                  Back to Home
-                </Link>
-              </div>
-            </div>
-          </div>
-        </Layout>
-      );
-    }
-
-    const articleUrl = getArticleUrl(article);
-    // Structured data for the article (NewsArticle schema for Google)
-    const articleSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'NewsArticle',
-      headline: article.title,
-      description: article.metaDescription || article.summary,
-      image: article.imageUrl,
-      datePublished: article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-      dateModified: article.updatedAt?.toDate?.()?.toISOString() || article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-      author: {
-        '@type': 'Person',
-        name: article.author || 'Neev News',
-        url: 'https://neevnews.com/about',
-      },
-      publisher: {
-        '@type': 'Organization',
-        name: 'Neev News',
-        url: 'https://neevnews.com',
-        logo: {
-          '@type': 'ImageObject',
-          url: 'https://neevnews.com/logo.png',
-          width: 600,
-          height: 60,
-        },
-      },
-      mainEntityOfPage: {
-        '@type': 'WebPage',
-        '@id': `https://neevnews.com${articleUrl}`,
-      },
-      articleSection: article.category,
-      keywords: article.keywords || article.tags?.join(', ') || '',
-      articleBody: article.content,
-      wordCount: article.content?.split(' ').length || 0,
-      inLanguage: 'en-US',
-    };
-
+  if (loading || router.isFallback) {
     return (
-      <Layout
-        title={article.title}
-        description={article.metaDescription || article.summary}
-        keywords={article.keywords}
-        canonicalUrl={`https://neevnews.com${articleUrl}`}
-      >
-        <Head>
-          {/* Structured Data for NewsArticle */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
-          />
+      <Layout>
+        <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-secondary-600 dark:text-secondary-400">Loading article...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
-          {/* Open Graph Meta Tags */}
-          <meta property="og:title" content={article.title} />
-          <meta property="og:description" content={article.metaDescription || article.summary} />
-          <meta property="og:image" content={article.imageUrl} />
-          <meta property="og:type" content="article" />
-          <meta property="og:url" content={`https://neevnews.com${articleUrl}`} />
-          <meta property="article:author" content={article.author} />
-          <meta property="article:published_time" content={article.createdAt?.toDate?.()?.toISOString() || ''} />
-          <meta property="article:section" content={article.category} />
-          {article.tags.map((tag, index) => (
-            <meta key={index} property="article:tag" content={tag} />
-          ))}
+  if (!article) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
+          <div className="text-center max-w-2xl mx-auto px-4">
+            <h1 className="text-3xl font-bold text-secondary-900 dark:text-white mb-4">Article Not Found</h1>
+            <div className="space-x-4">
+              <Link href="/" className="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                Back to Home
+              </Link>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
-          {/* Twitter Card Meta Tags */}
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:site" content="@neevnews" />
-          <meta name="twitter:creator" content="@neevnews" />
-          <meta name="twitter:title" content={article.title} />
-          <meta name="twitter:description" content={article.metaDescription || article.summary} />
-          <meta name="twitter:image" content={article.imageUrl} />
-          <meta name="twitter:image:alt" content={article.title} />
+  const articleUrl = getArticleUrl(article);
+  // Structured data for the article (NewsArticle schema for Google)
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: article.title,
+    description: article.metaDescription || article.summary,
+    image: article.imageUrl,
+    datePublished: article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+    dateModified: article.updatedAt?.toDate?.()?.toISOString() || article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+    author: {
+      '@type': 'Person',
+      name: article.author || 'Neev News',
+      url: 'https://neevnews.com/about',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Neev News',
+      url: 'https://neevnews.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://neevnews.com/logo.png',
+        width: 600,
+        height: 60,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://neevnews.com${articleUrl}`,
+    },
+    articleSection: article.category,
+    keywords: article.keywords || article.tags?.join(', ') || '',
+    articleBody: article.content,
+    wordCount: article.content?.split(' ').length || 0,
+    inLanguage: 'en-US',
+  };
 
-          {/* Additional SEO Meta Tags */}
-          <meta name="news_keywords" content={article.keywords || article.category} />
-          <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-          <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-          <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  return (
+    <Layout
+      title={article.title}
+      description={article.metaDescription || article.summary}
+      keywords={article.keywords}
+      canonicalUrl={`https://neevnews.com${articleUrl}`}
+    >
+      <Head>
+        {/* Structured Data for NewsArticle */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
 
-          {/* Mobile App Meta Tags */}
-          <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-          <meta name="apple-mobile-web-app-title" content="NeevNews" />
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content={article.title} />
+        <meta property="og:description" content={article.metaDescription || article.summary} />
+        <meta property="og:image" content={article.imageUrl} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://neevnews.com${articleUrl}`} />
+        <meta property="article:author" content={article.author} />
+        <meta property="article:published_time" content={article.createdAt?.toDate?.()?.toISOString() || ''} />
+        <meta property="article:section" content={article.category} />
+        {article.tags.map((tag, index) => (
+          <meta key={index} property="article:tag" content={tag} />
+        ))}
 
-          {/* Microsoft Tags */}
-          <meta name="msapplication-TileColor" content="#D9774A" />
-          <meta name="msapplication-TileImage" content="/logo.png" />
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@neevnews" />
+        <meta name="twitter:creator" content="@neevnews" />
+        <meta name="twitter:title" content={article.title} />
+        <meta name="twitter:description" content={article.metaDescription || article.summary} />
+        <meta name="twitter:image" content={article.imageUrl} />
+        <meta name="twitter:image:alt" content={article.title} />
 
-          {/* Google News Subscribe with Google */}
-          <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
+        {/* Additional SEO Meta Tags */}
+        <meta name="news_keywords" content={article.keywords || article.category} />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
-          {/* Structured Data - NewsArticle */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'NewsArticle',
-                headline: article.title,
-                description: article.summary,
-                image: {
+        {/* Mobile App Meta Tags */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="NeevNews" />
+
+        {/* Microsoft Tags */}
+        <meta name="msapplication-TileColor" content="#D9774A" />
+        <meta name="msapplication-TileImage" content="/logo.png" />
+
+        {/* Google News Subscribe with Google */}
+        <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
+
+        {/* Structured Data - NewsArticle */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'NewsArticle',
+              headline: article.title,
+              description: article.summary,
+              image: {
+                '@type': 'ImageObject',
+                url: article.imageUrl,
+                width: 1200,
+                height: 630,
+              },
+              datePublished: article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+              dateModified: article.updatedAt?.toDate?.()?.toISOString() || article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+              author: {
+                '@type': 'Person',
+                name: article.author,
+                url: `https://neevnews.com/author/${article.author.toLowerCase().replace(/\s+/g, '-')}`,
+              },
+              publisher: {
+                '@type': 'NewsMediaOrganization',
+                name: 'Neev News',
+                logo: {
                   '@type': 'ImageObject',
-                  url: article.imageUrl,
-                  width: 1200,
-                  height: 630,
+                  url: 'https://neevnews.com/logo.png',
+                  width: 200,
+                  height: 200,
                 },
-                datePublished: article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-                dateModified: article.updatedAt?.toDate?.()?.toISOString() || article.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-                author: {
-                  '@type': 'Person',
-                  name: article.author,
-                  url: `https://neevnews.com/author/${article.author.toLowerCase().replace(/\s+/g, '-')}`,
+                url: 'https://neevnews.com',
+                contactPoint: {
+                  '@type': 'ContactPoint',
+                  telephone: '+91-93693-36080',
+                  contactType: 'customer service',
+                  email: 'abhinavvoicebox@gmail.com',
+                  areaServed: 'IN',
+                  availableLanguage: 'English',
                 },
-                publisher: {
-                  '@type': 'NewsMediaOrganization',
-                  name: 'Neev News',
-                  logo: {
-                    '@type': 'ImageObject',
-                    url: 'https://neevnews.com/logo.png',
-                    width: 200,
-                    height: 200,
-                  },
-                  url: 'https://neevnews.com',
-                  contactPoint: {
-                    '@type': 'ContactPoint',
-                    telephone: '+91-93693-36080',
-                    contactType: 'customer service',
-                    email: 'abhinavvoicebox@gmail.com',
-                    areaServed: 'IN',
-                    availableLanguage: 'English',
-                  },
-                },
-                mainEntityOfPage: {
-                  '@type': 'WebPage',
-                  '@id': `https://neevnews.com${articleUrl}`,
-                },
-                articleSection: article.category,
-                keywords: article.keywords || article.tags?.join(', ') || article.category,
-                wordCount: article.content?.split(' ').length || 0,
-                articleBody: article.content,
-                isAccessibleForFree: true,
-                inLanguage: 'en-US',
-              })
-            }}
-          />
+              },
+              mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': `https://neevnews.com${articleUrl}`,
+              },
+              articleSection: article.category,
+              keywords: article.keywords || article.tags?.join(', ') || article.category,
+              wordCount: article.content?.split(' ').length || 0,
+              articleBody: article.content,
+              isAccessibleForFree: true,
+              inLanguage: 'en-US',
+            })
+          }}
+        />
 
-          {/* Breadcrumb Schema */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'BreadcrumbList',
-                itemListElement: [
-                  {
-                    '@type': 'ListItem',
-                    position: 1,
-                    name: 'Home',
-                    item: 'https://neevnews.com',
-                  },
-                  {
-                    '@type': 'ListItem',
-                    position: 2,
-                    name: article.category,
-                    item: `https://neevnews.com/category/${getCategorySlug(article.category)}`,
-                  },
-                  {
-                    '@type': 'ListItem',
-                    position: 3,
-                    name: article.title,
-                    item: `https://neevnews.com${articleUrl}`,
-                  },
-                ],
-              })
-            }}
-          />
-        </Head>
+        {/* Breadcrumb Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: 'Home',
+                  item: 'https://neevnews.com',
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: article.category,
+                  item: `https://neevnews.com/category/${getCategorySlug(article.category)}`,
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 3,
+                  name: article.title,
+                  item: `https://neevnews.com${articleUrl}`,
+                },
+              ],
+            })
+          }}
+        />
+      </Head>
 
-        <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900">
-          {/* Google News Subscribe with Google Initialization */}
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
+      <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900">
+        {/* Google News Subscribe with Google Initialization */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
               (self.SWG_BASIC = self.SWG_BASIC || []).push( basicSubscriptions => {
                 basicSubscriptions.init({
                   type: "NewsArticle",
@@ -512,153 +498,155 @@ const ArticlePage = () => {
                 });
               });
             `,
-            }}
-          />
+          }}
+        />
 
-          {/* Header Section */}
-          <div className="bg-white dark:bg-secondary-950 border-b border-secondary-200 dark:border-secondary-800">
-            <div className="container-custom py-3 md:py-6">
-              {/* Back Button */}
-              <Link
-                href="/"
-                className="inline-flex items-center space-x-1 md:space-x-2 px-0 md:px-4 py-1.5 md:py-2 mb-1 md:mb-6 text-sm text-secondary-600 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
-              >
-                <ArrowLeft size={16} />
-                <span>Back to News</span>
-              </Link>
-            </div>
-          </div>
-
+        {/* Header Section */}
+        <div className="bg-white dark:bg-secondary-950 border-b border-secondary-200 dark:border-secondary-800">
           <div className="container-custom py-3 md:py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-12">
-              {/* Main Content */}
-              <article className="lg:col-span-3">
-                <div className="max-w-4xl">
-                  {/* Category Badge - tighter spacing */}
-                  <div className="mb-2">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold ${getCategoryColor(article.category)} text-white`}>
-                      {article.category}
-                    </span>
-                  </div>
+            {/* Back Button */}
+            <Link
+              href="/"
+              className="inline-flex items-center space-x-1 md:space-x-2 px-0 md:px-4 py-1.5 md:py-2 mb-1 md:mb-6 text-sm text-secondary-600 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+            >
+              <ArrowLeft size={16} />
+              <span>Back to News</span>
+            </Link>
+          </div>
+        </div>
 
-                  {/* Article Title - Premium Serif */}
-                  <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-secondary-900 dark:text-white mb-2 md:mb-4 font-serif leading-tight tracking-tight">
-                    {article.title}
-                  </h1>
+        <div className="container-custom py-3 md:py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-12">
+            {/* Main Content */}
+            <article className="lg:col-span-3">
+              <div className="max-w-4xl">
+                {/* Category Badge - tighter spacing */}
+                <div className="mb-2">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold ${getCategoryColor(article.category)} text-white`}>
+                    {article.category}
+                  </span>
+                </div>
 
-                  {/* Article Meta Info - Compact */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-secondary-500 dark:text-secondary-400 mb-4 md:mb-6 border-b border-secondary-100 dark:border-secondary-800 pb-3 md:pb-5">
-                    <span className="font-bold text-secondary-900 dark:text-white uppercase tracking-wide">
-                      By {article.author}
-                    </span>
-                    <span className="text-secondary-300 dark:text-secondary-700">|</span>
-                    <span className="flex items-center space-x-1.5">
-                      <Clock size={12} />
-                      <span>{formatDateIST(article.createdAt)}</span>
-                    </span>
-                    <span className="flex items-center space-x-1.5">
-                      <Clock size={12} />
-                      <span>{readingTime} min read</span>
-                    </span>
-                  </div>
+                {/* Article Title - Premium Serif */}
+                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-secondary-900 dark:text-white mb-2 md:mb-4 font-serif leading-tight tracking-tight">
+                  {article.title}
+                </h1>
 
-                  {/* Featured Image - Adjusted aspect ratio */}
-                  <div className="relative w-full aspect-video mb-4 md:mb-8 rounded-lg overflow-hidden shadow-sm">
-                    <Image
-                      src={getImageUrl(article.imageUrl)}
-                      alt={article.title}
-                      fill
-                      className="object-cover"
-                      priority
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 900px"
-                    />
-                  </div>
+                {/* Article Meta Info - Compact */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-secondary-500 dark:text-secondary-400 mb-4 md:mb-6 border-b border-secondary-100 dark:border-secondary-800 pb-3 md:pb-5">
+                  <span className="font-bold text-secondary-900 dark:text-white uppercase tracking-wide">
+                    By {article.author}
+                  </span>
+                  <span className="text-secondary-300 dark:text-secondary-700">|</span>
+                  <span className="flex items-center space-x-1.5">
+                    <Clock size={12} />
+                    <span>{formatDateIST(article.createdAt)}</span>
+                  </span>
+                  <span className="flex items-center space-x-1.5">
+                    <Clock size={12} />
+                    <span>{readingTime} min read</span>
+                  </span>
+                </div>
 
-                  {/* Article Summary (Lead) - Refined */}
-                  <div className="mb-6 md:mb-8">
-                    <p className="text-lg md:text-2xl text-secondary-700 dark:text-secondary-300 font-serif leading-relaxed italic">
-                      {article.summary}
+                {/* Featured Image - Adjusted aspect ratio */}
+                <div className="relative w-full aspect-video mb-4 md:mb-8 rounded-lg overflow-hidden shadow-sm">
+                  <Image
+                    src={getImageUrl(article.imageUrl)}
+                    alt={article.title}
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 900px"
+                  />
+                </div>
+
+                {/* Article Summary (Lead) - Refined */}
+                <div className="mb-6 md:mb-8">
+                  <p className="text-lg md:text-2xl text-secondary-700 dark:text-secondary-300 font-serif leading-relaxed italic">
+                    {article.summary}
+                  </p>
+                </div>
+
+                {/* Article Content */}
+                <div className="prose prose-lg dark:prose-invert max-w-none">
+                  {article.content.split('\n').map((line, lineIdx) => {
+                    // Render ## headings as H2 elements
+                    const h2Match = line.match(/^## (.+)$/);
+                    if (h2Match) {
+                      return (
+                        <h2
+                          key={lineIdx}
+                          className="text-2xl font-bold text-secondary-900 dark:text-white mt-8 mb-4 font-serif"
+                        >
+                          {h2Match[1]}
+                        </h2>
+                      );
+                    }
+
+                    // Skip empty lines
+                    if (line.trim() === '') return null;
+
+                    // Normal text with URL detection
+                    return (
+                      <p
+                        key={lineIdx}
+                        className="text-secondary-800 dark:text-secondary-200 leading-[1.8] text-lg md:text-xl font-normal mb-4"
+                        style={{
+                          fontFamily: 'Inter, system-ui, sans-serif',
+                          lineHeight: '1.8',
+                          letterSpacing: '0.01em'
+                        }}
+                      >
+                        {line.split(/(https?:\/\/[^\s]+)/g).map((part, partIdx) => {
+                          if (part.match(/https?:\/\/[^\s]+/)) {
+                            return (
+                              <a
+                                key={partIdx}
+                                href={part}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary-600 dark:text-primary-400 hover:underline break-all"
+                              >
+                                {part}
+                              </a>
+                            );
+                          }
+                          return part;
+                        })}
+                      </p>
+                    );
+                  })}
+                </div>
+
+                {/* Source Link */}
+                {article.sourceUrl && (
+                  <div className="mt-8 pt-4 border-t border-secondary-200 dark:border-secondary-700">
+                    <p className="text-sm text-secondary-600 dark:text-secondary-400">
+                      Source: {' '}
+                      <a
+                        href={article.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-600 dark:text-primary-400 hover:underline font-medium break-all"
+                      >
+                        {article.sourceName || 'Read Original Article'}
+                        <span className="inline-block ml-1">↗</span>
+                      </a>
                     </p>
                   </div>
+                )}
 
-                  {/* Article Content */}
-                  <div className="prose prose-lg dark:prose-invert max-w-none">
-                    {article.content.split('\n').map((line, lineIdx) => {
-                      // Render ## headings as H2 elements
-                      const h2Match = line.match(/^## (.+)$/);
-                      if (h2Match) {
-                        return (
-                          <h2
-                            key={lineIdx}
-                            className="text-2xl font-bold text-secondary-900 dark:text-white mt-8 mb-4 font-serif"
-                          >
-                            {h2Match[1]}
-                          </h2>
-                        );
-                      }
-
-                      // Skip empty lines
-                      if (line.trim() === '') return null;
-
-                      // Normal text with URL detection
-                      return (
-                        <p
-                          key={lineIdx}
-                          className="text-secondary-800 dark:text-secondary-200 leading-[1.8] text-lg md:text-xl font-normal mb-4"
-                          style={{
-                            fontFamily: 'Inter, system-ui, sans-serif',
-                            lineHeight: '1.8',
-                            letterSpacing: '0.01em'
-                          }}
-                        >
-                          {line.split(/(https?:\/\/[^\s]+)/g).map((part, partIdx) => {
-                            if (part.match(/https?:\/\/[^\s]+/)) {
-                              return (
-                                <a
-                                  key={partIdx}
-                                  href={part}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary-600 dark:text-primary-400 hover:underline break-all"
-                                >
-                                  {part}
-                                </a>
-                              );
-                            }
-                            return part;
-                          })}
-                        </p>
-                      );
-                    })}
-                  </div>
-
-                  {/* Source Link */}
-                  {article.sourceUrl && (
-                    <div className="mt-8 pt-4 border-t border-secondary-200 dark:border-secondary-700">
-                      <p className="text-sm text-secondary-600 dark:text-secondary-400">
-                        Source: {' '}
-                        <a
-                          href={article.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 dark:text-primary-400 hover:underline font-medium break-all"
-                        >
-                          {article.sourceName || 'Read Original Article'}
-                          <span className="inline-block ml-1">↗</span>
-                        </a>
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Tags */}
-                  {article.keywords && article.keywords.length > 0 && (
+                {/* Tags */}
+                {article.keywords && (Array.isArray(article.keywords) ? article.keywords : article.keywords.split(',').map((k: string) => k.trim())).length > 0 && (() => {
+                  const keywordsArr = Array.isArray(article.keywords) ? article.keywords : article.keywords.split(',').map((k: string) => k.trim()).filter(Boolean);
+                  return (
                     <div className="mb-4 md:mb-8">
                       <div className="flex items-center space-x-2 text-secondary-600 dark:text-secondary-400 mb-2 md:mb-3">
-                        <TagIcon size={16} />
+                        <Tag size={16} />
                         <span className="font-semibold text-sm">Tags</span>
                       </div>
                       <div className="flex flex-wrap gap-1.5 md:gap-2">
-                        {article.keywords.map((keyword) => (
+                        {keywordsArr.map((keyword: string) => (
                           <Link
                             key={keyword}
                             href={`/search?q=${encodeURIComponent(keyword)}`}
@@ -669,115 +657,95 @@ const ArticlePage = () => {
                         ))}
                       </div>
                     </div>
-                  )}
+                  );
+                })()}
 
-                  onClick={() => handleShare('linkedin')}
-                  className="w-full px-4 py-2 text-left hover:bg-secondary-100 dark:hover:bg-secondary-700 flex items-center space-x-3"
-                          >
-                  <Linkedin size={18} className="text-blue-700" />
-                  <span>LinkedIn</span>
-                </button>
-                <button
-                  onClick={() => handleShare('email')}
-                  className="w-full px-4 py-2 text-left hover:bg-secondary-100 dark:hover:bg-secondary-700 flex items-center space-x-3"
-                >
-                  <Mail size={18} className="text-secondary-600" />
-                  <span>Email</span>
-                </button>
-            </div>
-                      )}
+              </div>
+            </article>
+
+            {/* Sidebar */}
+            <aside className="lg:col-span-1 space-y-4 md:space-y-8">
+              {/* Author Card */}
+              <div className="card p-4 md:p-6 bg-white dark:bg-secondary-900 border border-secondary-100 dark:border-secondary-800 shadow-sm">
+                <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-3 font-serif">About the Author</h3>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-base md:text-lg">
+                      {article.author.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-secondary-900 dark:text-white text-sm md:text-base">{article.author}</h4>
+                    <p className="text-secondary-500 dark:text-secondary-400 text-xs">News Reporter</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Related Articles */}
+              {relatedArticles.length > 0 && (
+                <div className="card p-4 md:p-6 bg-white dark:bg-secondary-900 shadow-sm">
+                  <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-3 flex items-center font-serif">
+                    <TrendingUp size={18} className="mr-2 text-primary-600" />
+                    Related Articles
+                  </h3>
+                  <div className="space-y-3 md:space-y-4">
+                    {relatedArticles.slice(0, 3).map((relatedArticle) => (
+                      <Link
+                        key={relatedArticle.id}
+                        href={getArticleUrl(relatedArticle)}
+                        className="block group"
+                      >
+                        <div className="flex space-x-3">
+                          <div className="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-secondary-100 rounded-md overflow-hidden">
+                            <Image
+                              src={getImageUrl(relatedArticle.imageUrl)}
+                              alt={relatedArticle.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              sizes="64px"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0 pt-0.5">
+                            <h4 className="text-xs md:text-sm font-semibold text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200 line-clamp-2 leading-snug">
+                              {relatedArticle.title}
+                            </h4>
+                            <p className="text-[10px] text-secondary-500 mt-1">
+                              {formatDateIST(relatedArticle.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Newsletter Signup */}
+              <div className="card p-4 md:p-6 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 border border-primary-100 dark:border-primary-800/50">
+                <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-2 font-serif">
+                  Stay Updated
+                </h3>
+                <p className="text-secondary-600 dark:text-secondary-400 text-xs md:text-sm mb-3">
+                  Latest news delivered to you.
+                </p>
+                <form className="space-y-2">
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    className="w-full px-3 py-2 rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white placeholder-secondary-400 focus:outline-none focus:ring-1 focus:ring-primary-500 text-xs md:text-sm"
+                  />
+                  <button type="submit" className="w-full btn-primary py-2 text-xs md:text-sm font-medium">
+                    Subscribe
+                  </button>
+                </form>
+              </div>
+            </aside>
           </div>
         </div>
       </div>
-      </div >
-            </article >
-
-  {/* Sidebar */ }
-  < aside className = "lg:col-span-1 space-y-4 md:space-y-8" >
-    {/* Author Card */ }
-    < div className = "card p-4 md:p-6 bg-white dark:bg-secondary-900 border border-secondary-100 dark:border-secondary-800 shadow-sm" >
-                  <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-3 font-serif">About the Author</h3>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-base md:text-lg">
-                        {article.author.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-secondary-900 dark:text-white text-sm md:text-base">{article.author}</h4>
-                      <p className="text-secondary-500 dark:text-secondary-400 text-xs">News Reporter</p>
-                    </div>
-                  </div>
-                </div >
-
-  {/* Related Articles */ }
-{
-  relatedArticles.length > 0 && (
-    <div className="card p-4 md:p-6 bg-white dark:bg-secondary-900 shadow-sm">
-      <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-3 flex items-center font-serif">
-        <TrendingUp size={18} className="mr-2 text-primary-600" />
-        Related Articles
-      </h3>
-      <div className="space-y-3 md:space-y-4">
-        {relatedArticles.slice(0, 3).map((relatedArticle) => (
-          <Link
-            key={relatedArticle.id}
-            href={getArticleUrl(relatedArticle)}
-            className="block group"
-          >
-            <div className="flex space-x-3">
-              <div className="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-secondary-100 rounded-md overflow-hidden">
-                <Image
-                  src={getImageUrl(relatedArticle.imageUrl)}
-                  alt={relatedArticle.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="64px"
-                  loading="lazy"
-                />
-              </div>
-              <div className="flex-1 min-w-0 pt-0.5">
-                <h4 className="text-xs md:text-sm font-semibold text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200 line-clamp-2 leading-snug">
-                  {relatedArticle.title}
-                </h4>
-                <p className="text-[10px] text-secondary-500 mt-1">
-                  {formatDateIST(relatedArticle.createdAt)}
-                </p>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-{/* Newsletter Signup */ }
-<div className="card p-4 md:p-6 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 border border-primary-100 dark:border-primary-800/50">
-  <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-2 font-serif">
-    Stay Updated
-  </h3>
-  <p className="text-secondary-600 dark:text-secondary-400 text-xs md:text-sm mb-3">
-    Latest news delivered to you.
-  </p>
-  <form className="space-y-2">
-    <input
-      type="email"
-      placeholder="Your email"
-      className="w-full px-3 py-2 rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white placeholder-secondary-400 focus:outline-none focus:ring-1 focus:ring-primary-500 text-xs md:text-sm"
-    />
-    <button type="submit" className="w-full btn-primary py-2 text-xs md:text-sm font-medium">
-      Subscribe
-    </button>
-  </form>
-</div>
-              </aside >
-          </div >
-        </div >
-      </div >
-    </Layout >
+    </Layout>
   );
 };
 
 export default ArticlePage;
-

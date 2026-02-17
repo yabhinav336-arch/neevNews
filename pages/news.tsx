@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -21,6 +22,7 @@ interface Article {
 }
 
 const AllNewsPage = () => {
+  const router = useRouter();
   const [articles, setArticles] = useState<Article[]>([]);
   const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +30,13 @@ const AllNewsPage = () => {
   const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Read search query from URL params
+  useEffect(() => {
+    if (router.isReady && router.query.search) {
+      setSearchQuery(router.query.search as string);
+    }
+  }, [router.isReady, router.query.search]);
 
   useEffect(() => {
     fetchAllArticles();
@@ -85,7 +94,7 @@ const AllNewsPage = () => {
     if (!date) return '';
     const dateObj = date?.toDate ? date.toDate() : new Date(date);
     const seconds = Math.floor((new Date().getTime() - dateObj.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
@@ -150,11 +159,10 @@ const AllNewsPage = () => {
             <div className="flex flex-wrap gap-3 mb-4">
               <button
                 onClick={() => setSelectedCategory('all')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 ${
-                  selectedCategory === 'all'
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 ${selectedCategory === 'all'
                     ? 'bg-primary-600 text-white'
                     : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                }`}
+                  }`}
               >
                 All Categories
               </button>
@@ -162,11 +170,10 @@ const AllNewsPage = () => {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.name)}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 ${
-                    selectedCategory === category.name
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 ${selectedCategory === category.name
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                  }`}
+                    }`}
                 >
                   {category.icon} {category.name}
                 </button>
@@ -183,21 +190,19 @@ const AllNewsPage = () => {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setSortBy('latest')}
-                    className={`px-3 py-1.5 rounded-lg font-medium text-sm transition-colors duration-200 ${
-                      sortBy === 'latest'
+                    className={`px-3 py-1.5 rounded-lg font-medium text-sm transition-colors duration-200 ${sortBy === 'latest'
                         ? 'bg-primary-600 text-white'
                         : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                    }`}
+                      }`}
                   >
                     Latest
                   </button>
                   <button
                     onClick={() => setSortBy('popular')}
-                    className={`px-3 py-1.5 rounded-lg font-medium text-sm transition-colors duration-200 ${
-                      sortBy === 'popular'
+                    className={`px-3 py-1.5 rounded-lg font-medium text-sm transition-colors duration-200 ${sortBy === 'popular'
                         ? 'bg-primary-600 text-white'
                         : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                    }`}
+                      }`}
                   >
                     Popular
                   </button>
@@ -207,21 +212,19 @@ const AllNewsPage = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors duration-200 ${
-                    viewMode === 'grid'
+                  className={`p-2 rounded-lg transition-colors duration-200 ${viewMode === 'grid'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                  }`}
+                    }`}
                 >
                   <Grid size={18} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors duration-200 ${
-                    viewMode === 'list'
+                  className={`p-2 rounded-lg transition-colors duration-200 ${viewMode === 'list'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                  }`}
+                    }`}
                 >
                   <List size={18} />
                 </button>

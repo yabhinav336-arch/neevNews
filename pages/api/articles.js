@@ -6,31 +6,13 @@
  *
  * 1. Fetches from Firestore on the server (150 reads)
  * 2. Returns JSON with CDN cache headers (5 min)
- * 3. Netlify/CDN serves the cached response to all visitors (0 reads)
+ * 3. CDN serves the cached response to all visitors (0 reads)
  *
  * Result: ~150 reads every 5 minutes, regardless of visitor count.
- * 100 visitors in 5 min = 150 reads (not 15,000).
- */
-
-/**
- * /api/articles — cached proxy for Firestore articles
- *
- * Instead of every visitor's browser querying Firestore directly
- * (150 docs = 150 reads per visitor), this API route:
- *
- * 1. Fetches from Firestore on the server (150 reads)
- * 2. Returns JSON with CDN cache headers (5 min)
- * 3. Netlify/CDN serves the cached response to all visitors (0 reads)
- *
- * Result: ~150 reads every 5 minutes, regardless of visitor count.
- * 100 visitors in 5 min = 150 reads (not 15,000).
  */
 
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { NextResponse } from 'next/server';
-
-export const runtime = 'edge';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyDTAjMPLylkSq3Gjh90ggtW3-c7Mg8Yads',
@@ -44,7 +26,11 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export default async function handler(req) {
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
     const snapshot = await getDocs(collection(db, 'news'));
     const articles = [];
@@ -52,7 +38,6 @@ export default async function handler(req) {
     snapshot.forEach((doc) => {
       const data = doc.data();
       if (data.status === 'published') {
-        // Convert Firestore Timestamps to ISO strings for JSON
         const createdAt = data.createdAt?.toDate
           ? data.createdAt.toDate().toISOString()
           : data.createdAt || null;
@@ -67,7 +52,7 @@ export default async function handler(req) {
           id: doc.id,
           title: data.title || '',
           summary: data.summary || '',
-          content: data.content || '',
+          // content intentionally omitted — not needed for listing pages
           imageUrl: data.imageUrl || '',
           category: data.category || '',
           author: data.author || '',
@@ -100,21 +85,15 @@ export default async function handler(req) {
       return db2 - da;
     });
 
-    // CDN cache: serve stale for 5 min, revalidate in background
-    // s-maxage = CDN cache time (300s = 5 min)
-    // stale-while-revalidate = serve stale while fetching fresh (600s = 10 min)
-    return NextResponse.json({
+    // CDN cache: 5 min cache, 10 min stale-while-revalidate
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    return res.status(200).json({
       articles,
       count: articles.length,
       cachedAt: new Date().toISOString(),
-    }, {
-      status: 200,
-      headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
-      }
     });
   } catch (error) {
     console.error('Error in /api/articles:', error);
-    return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 });
+    return res.status(500).json({ error: 'Failed to fetch articles' });
   }
 }

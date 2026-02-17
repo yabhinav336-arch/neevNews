@@ -145,6 +145,16 @@ const Header: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMenuOpen]);
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -189,8 +199,8 @@ const Header: React.FC = () => {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || isMenuOpen
-            ? 'bg-white/95 dark:bg-secondary-950/95 backdrop-blur-md shadow-lg'
-            : 'bg-transparent'
+          ? 'bg-white/95 dark:bg-secondary-950/95 backdrop-blur-md shadow-lg'
+          : 'bg-transparent'
           }`}
       >
         <div className="container-custom">
@@ -222,7 +232,7 @@ const Header: React.FC = () => {
               >
                 Home
               </Link>
-              {categories.slice(0, 5).map((category) => (
+              {categories.map((category) => (
                 <Link
                   key={category.id}
                   href={`/category/${category.slug}`}
@@ -451,7 +461,7 @@ const Header: React.FC = () => {
 
           {/* Mobile Menu */}
           <div
-            className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+            className={`lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-[calc(100vh-4rem)] opacity-100 overflow-y-auto' : 'max-h-0 opacity-0 overflow-hidden'
               }`}
           >
             <nav className="py-4 space-y-2 border-t border-secondary-200 dark:border-secondary-700">
@@ -476,7 +486,7 @@ const Header: React.FC = () => {
               >
                 Home
               </Link>
-              {categories.slice(0, 6).map((category) => (
+              {categories.map((category) => (
                 <Link
                   key={category.id}
                   href={`/category/${category.slug}`}
