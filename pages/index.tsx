@@ -213,50 +213,50 @@ const HomePage: React.FC<HomePageProps> = ({
                   {/* Main Featured Article */}
                   <div className="lg:col-span-2">
                     <Link href={getArticleUrl(featuredArticles[0])} className="group">
-                      <div className="relative aspect-[16/9] lg:aspect-[21/9] overflow-hidden rounded-2xl">
+                      <div className="relative aspect-video w-full overflow-hidden rounded-xl">
+                        {/* Hero Image */}
                         <Image
                           src={getImageUrl(featuredArticles[0].imageUrl)}
                           alt={featuredArticles[0].title}
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
                           priority
-                          sizes="(max-width: 768px) 100vw, 66vw"
+                          sizes="(max-width: 768px) 100vw, 50vw"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
 
                         {/* Badges */}
-                        <div className="absolute top-6 left-6 flex items-center space-x-2">
+                        <div className="absolute top-2 left-2 right-2 md:top-4 md:left-4 md:right-4 flex flex-wrap gap-1.5 md:gap-2">
                           {featuredArticles[0].isBreaking && (
-                            <span className="px-4 py-1.5 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse flex items-center space-x-1">
-                              <Zap size={12} className="fill-current" />
+                            <span className="px-2 py-0.5 md:px-3 md:py-1 bg-red-600 text-white text-[10px] md:text-xs font-bold rounded-full animate-pulse flex items-center space-x-1">
+                              <Zap size={10} className="fill-current" />
                               <span>BREAKING</span>
                             </span>
                           )}
-                          <span className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold rounded-full flex items-center space-x-1">
-                            <Flame size={12} className="fill-current" />
+                          <span className="px-2 py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] md:text-xs font-bold rounded-full flex items-center space-x-1">
+                            <Flame size={10} className="fill-current" />
                             <span>FEATURED</span>
                           </span>
-                          <span className={`px-3 py-1.5 text-white text-xs font-medium rounded-full ${getCategoryColor(featuredArticles[0].category)}`}>
+                          <span className={`px-2 py-0.5 md:px-3 md:py-1 text-white text-[10px] md:text-xs font-medium rounded-full ${getCategoryColor(featuredArticles[0].category)}`}>
                             {featuredArticles[0].category}
                           </span>
                         </div>
 
-                        {/* Content */}
-                        <div className="absolute bottom-0 left-0 right-0 p-8">
-                          <h1 className="text-3xl lg:text-5xl font-bold text-white mb-4 leading-tight group-hover:text-primary-300 transition-colors duration-200">
+                        {/* Hero Content */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
+                          <h2 className="text-xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-4 font-serif leading-tight">
                             {featuredArticles[0].title}
-                          </h1>
-                          <p className="text-lg text-white/90 mb-4 line-clamp-2">
+                          </h2>
+                          <p className="text-gray-200 line-clamp-2 md:line-clamp-3 mb-2 md:mb-4 text-xs md:text-base hidden sm:block">
                             {featuredArticles[0].summary}
                           </p>
-                          <div className="flex items-center space-x-4 text-white/80 text-sm">
-                            <span className="flex items-center space-x-1">
-                              <User size={14} />
+                          <div className="flex items-center text-gray-300 text-[10px] md:text-sm space-x-4">
+                            <span className="flex items-center space-x-1.5">
+                              <User size={12} className="md:w-4 md:h-4" />
                               <span>{featuredArticles[0].author}</span>
                             </span>
-                            <span>•</span>
-                            <span className="flex items-center space-x-1">
-                              <Clock size={14} />
+                            <span className="flex items-center space-x-1.5">
+                              <Clock size={12} className="md:w-4 md:h-4" />
                               <span>{formatTimeAgo(featuredArticles[0].createdAt)}</span>
                             </span>
                           </div>
@@ -266,24 +266,23 @@ const HomePage: React.FC<HomePageProps> = ({
 
                     {/* Secondary Featured Articles */}
                     {featuredArticles.length > 1 && (
-                      <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
                         {featuredArticles.slice(1, 3).map((article) => (
                           <Link key={article.id} href={getArticleUrl(article)} className="group">
-                            <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
+                            <div className="relative aspect-[16/9] overflow-hidden rounded-lg md:rounded-xl">
                               <Image
                                 src={getImageUrl(article.imageUrl)}
                                 alt={article.title}
                                 fill
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                sizes="(max-width: 768px) 100vw, 50vw"
-                                loading="lazy"
+                                sizes="(max-width: 768px) 100vw, 25vw"
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                              <div className="absolute bottom-0 left-0 right-0 p-4">
-                                <span className={`inline-block px-2 py-0.5 text-white text-xs font-medium rounded mb-2 ${getCategoryColor(article.category)}`}>
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                              <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+                                <span className={`inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[9px] md:text-[10px] font-bold text-white rounded mb-1 md:mb-2 ${getCategoryColor(article.category)}`}>
                                   {article.category}
                                 </span>
-                                <h3 className="text-white font-semibold line-clamp-2 group-hover:text-primary-300 transition-colors duration-200">
+                                <h3 className="text-sm md:text-lg font-bold text-white line-clamp-2 leading-tight">
                                   {article.title}
                                 </h3>
                               </div>
@@ -297,7 +296,7 @@ const HomePage: React.FC<HomePageProps> = ({
                   {/* Sidebar - Trending & Newsletter */}
                   <div className="space-y-6">
                     {/* Trending Now */}
-                    <div className="card p-6">
+                    <div className="card p-4 sm:p-6">
                       <div className="flex items-center space-x-2 mb-4">
                         <TrendingUp size={20} className="text-orange-600" />
                         <h3 className="text-lg font-bold text-secondary-900 dark:text-white">
@@ -373,24 +372,24 @@ const HomePage: React.FC<HomePageProps> = ({
           )}
 
           {/* Latest News Grid */}
-          <section className="container-custom py-12">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-1 h-8 bg-gradient-to-b from-primary-500 to-accent-500 rounded-full"></div>
-                <h2 className="text-3xl font-bold text-secondary-900 dark:text-white font-serif">
+          <section className="container-custom py-4 md:py-12">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4 md:mb-8">
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <div className="w-1 h-6 md:h-8 bg-gradient-to-b from-primary-500 to-accent-500 rounded-full"></div>
+                <h2 className="text-xl md:text-3xl font-bold text-secondary-900 dark:text-white font-serif">
                   Latest News
                 </h2>
               </div>
               <Link
                 href="/news"
-                className="flex items-center space-x-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold transition-colors duration-200"
+                className="flex items-center space-x-1 md:space-x-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold text-sm transition-colors duration-200"
               >
                 <span>View All</span>
-                <ArrowRight size={18} />
+                <ArrowRight size={16} />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {latestNews.map((article) => (
                 <article key={article.id} className="group">
                   <Link href={getArticleUrl(article)}>
@@ -404,32 +403,32 @@ const HomePage: React.FC<HomePageProps> = ({
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                           loading="lazy"
                         />
-                        <div className="absolute top-3 left-3 flex items-center space-x-2">
+                        <div className="absolute top-2 left-2 flex items-center space-x-2">
                           {article.isPinned && (
-                            <span className="px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded flex items-center space-x-1">
+                            <span className="px-2 py-1 bg-blue-600 text-white text-[10px] font-medium rounded flex items-center space-x-1">
                               <Pin size={10} />
                               <span>Pinned</span>
                             </span>
                           )}
                           {article.isBreaking && (
-                            <span className="px-2 py-1 bg-red-600 text-white text-xs font-medium rounded flex items-center space-x-1">
+                            <span className="px-2 py-1 bg-red-600 text-white text-[10px] font-medium rounded flex items-center space-x-1">
                               <Zap size={10} className="fill-current" />
                               <span>Breaking</span>
                             </span>
                           )}
-                          <span className={`px-2 py-1 text-white text-xs font-medium rounded ${getCategoryColor(article.category)}`}>
+                          <span className={`px-2 py-1 text-white text-[10px] font-medium rounded ${getCategoryColor(article.category)}`}>
                             {article.category}
                           </span>
                         </div>
                       </div>
-                      <div className="p-4">
-                        <h3 className="text-base font-semibold text-secondary-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
+                      <div className="p-3 md:p-4">
+                        <h3 className="text-base font-semibold text-secondary-900 dark:text-white mb-2 line-clamp-2 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                           {article.title}
                         </h3>
-                        <p className="text-secondary-600 dark:text-secondary-400 text-sm line-clamp-2 mb-3">
+                        <p className="text-secondary-600 dark:text-secondary-400 text-xs md:text-sm line-clamp-2 mb-2 md:mb-3">
                           {article.summary}
                         </p>
-                        <div className="flex items-center text-xs text-secondary-500">
+                        <div className="flex items-center text-[10px] md:text-xs text-secondary-500">
                           <span className="flex items-center space-x-1">
                             <Clock size={12} />
                             <span>{formatTimeAgo(article.createdAt)}</span>
@@ -455,25 +454,25 @@ const HomePage: React.FC<HomePageProps> = ({
           {/* Category Sections */}
           {Object.entries(categoryNews).map(([categoryName, articles]) => (
             articles.length > 0 && (
-              <section key={categoryName} className="bg-secondary-50 dark:bg-secondary-900/50 py-12">
+              <section key={categoryName} className="bg-secondary-50 dark:bg-secondary-900/50 py-6 md:py-12">
                 <div className="container-custom">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-1 h-8 bg-gradient-to-b from-primary-500 to-accent-500 rounded-full"></div>
-                      <h2 className="text-2xl font-bold text-secondary-900 dark:text-white font-serif">
+                  <div className="flex items-center justify-between mb-4 md:mb-8">
+                    <div className="flex items-center space-x-2 md:space-x-3">
+                      <div className="w-1 h-6 md:h-8 bg-gradient-to-b from-primary-500 to-accent-500 rounded-full"></div>
+                      <h2 className="text-lg md:text-2xl font-bold text-secondary-900 dark:text-white font-serif">
                         {categoryName}
                       </h2>
                     </div>
                     <Link
                       href={`/category/${categories.find(c => c.name === categoryName)?.slug}`}
-                      className="flex items-center space-x-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium text-sm transition-colors duration-200"
+                      className="flex items-center space-x-1 md:space-x-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium text-xs md:text-sm transition-colors duration-200"
                     >
                       <span>More {categoryName}</span>
-                      <ChevronRight size={16} />
+                      <ChevronRight size={14} />
                     </Link>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     {articles.map((article) => (
                       <article key={article.id} className="group">
                         <Link href={getArticleUrl(article)}>
@@ -488,19 +487,19 @@ const HomePage: React.FC<HomePageProps> = ({
                                 loading="lazy"
                               />
                               {article.isTrending && (
-                                <div className="absolute top-3 left-3">
-                                  <span className="px-2 py-1 bg-orange-600 text-white text-xs font-medium rounded flex items-center space-x-1">
+                                <div className="absolute top-2 left-2">
+                                  <span className="px-2 py-1 bg-orange-600 text-white text-[10px] font-medium rounded flex items-center space-x-1">
                                     <TrendingUp size={10} />
                                     <span>Trending</span>
                                   </span>
                                 </div>
                               )}
                             </div>
-                            <div className="p-4">
-                              <h3 className="text-sm font-semibold text-secondary-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
+                            <div className="p-3 md:p-4">
+                              <h3 className="text-sm font-semibold text-secondary-900 dark:text-white mb-1 md:mb-2 line-clamp-2 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                                 {article.title}
                               </h3>
-                              <div className="flex items-center text-xs text-secondary-500">
+                              <div className="flex items-center text-[10px] md:text-xs text-secondary-500">
                                 <span>{formatTimeAgo(article.createdAt)}</span>
                               </div>
                             </div>
