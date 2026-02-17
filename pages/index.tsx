@@ -265,7 +265,7 @@ const HomePage: React.FC<HomePageProps> = ({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
                         {featuredArticles.slice(1, 3).map((article) => (
                           <Link key={article.id} href={getArticleUrl(article)} className="group">
-                            <div className="relative aspect-[16/9] overflow-hidden rounded-lg md:rounded-xl">
+                            <div className="relative aspect-[3/2] md:aspect-[16/9] overflow-hidden rounded-lg md:rounded-xl shadow-md">
                               <Image
                                 src={getImageUrl(article.imageUrl)}
                                 alt={article.title}
@@ -275,10 +275,10 @@ const HomePage: React.FC<HomePageProps> = ({
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                               <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
-                                <span className={`inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[9px] md:text-[10px] font-bold text-white rounded mb-1 md:mb-2 ${getCategoryColor(article.category)}`}>
+                                <span className={`inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[9px] md:text-[10px] uppercase font-bold tracking-wider text-white rounded mb-1 md:mb-2 shadow-sm ${getCategoryColor(article.category)}`}>
                                   {article.category}
                                 </span>
-                                <h3 className="text-sm md:text-lg font-bold text-white line-clamp-2 leading-tight">
+                                <h3 className="text-sm md:text-lg font-bold text-white line-clamp-2 leading-tight drop-shadow-sm font-serif">
                                   {article.title}
                                 </h3>
                               </div>
@@ -290,16 +290,16 @@ const HomePage: React.FC<HomePageProps> = ({
                   </div>
 
                   {/* Sidebar - Trending & Newsletter */}
-                  <div className="space-y-6">
+                  <div className="space-y-4 md:space-y-6">
                     {/* Trending Now */}
-                    <div className="card p-4 sm:p-6">
-                      <div className="flex items-center space-x-2 mb-4">
+                    <div className="card p-4 md:p-6 bg-white dark:bg-secondary-800 shadow-sm border border-secondary-100 dark:border-secondary-700/50">
+                      <div className="flex items-center space-x-2 mb-3 md:mb-4">
                         <TrendingUp size={20} className="text-orange-600" />
-                        <h3 className="text-lg font-bold text-secondary-900 dark:text-white">
+                        <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white font-serif">
                           Trending Now
                         </h3>
                       </div>
-                      <div className="space-y-4">
+                      <div className="space-y-3 md:space-y-4">
                         {trendingArticles.map((article, index) => (
                           <Link
                             key={article.id}
@@ -307,17 +307,15 @@ const HomePage: React.FC<HomePageProps> = ({
                             className="group block"
                           >
                             <div className="flex space-x-3">
-                              <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                                {index + 1}
+                              <span className="text-xl md:text-2xl font-bold text-secondary-200 dark:text-secondary-700 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                {String(index + 1).padStart(2, '0')}
                               </span>
-                              <div className="flex-1">
-                                <h4 className="text-sm font-semibold text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200 line-clamp-2">
+                              <div className="flex-1 pt-0.5">
+                                <h4 className="text-sm font-semibold text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200 line-clamp-2 leading-snug">
                                   {article.title}
                                 </h4>
-                                <div className="flex items-center space-x-2 mt-1 text-xs text-secondary-500">
-                                  <span>{article.category}</span>
-                                  <span>•</span>
-                                  <span>{formatTimeAgo(article.createdAt)}</span>
+                                <div className="flex items-center space-x-2 mt-1 text-[10px] md:text-xs text-secondary-500 font-medium">
+                                  <span className="uppercase tracking-wide">{article.category}</span>
                                 </div>
                               </div>
                             </div>
@@ -327,27 +325,27 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
 
                     {/* Newsletter Signup */}
-                    <div className="card p-6 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 border-primary-200 dark:border-primary-800">
-                      <h3 className="text-lg font-bold text-secondary-900 dark:text-white mb-2">
+                    <div className="card p-4 md:p-6 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 border border-primary-100 dark:border-primary-800/50">
+                      <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-1 md:mb-2 font-serif">
                         Daily Newsletter
                       </h3>
-                      <p className="text-sm text-secondary-600 dark:text-secondary-400 mb-4">
-                        Get the day's top stories delivered to your inbox every morning.
+                      <p className="text-sm text-secondary-600 dark:text-secondary-400 mb-3 md:mb-4 leading-relaxed">
+                        Top stories delivered to your inbox.
                       </p>
-                      <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+                      <form onSubmit={handleNewsletterSubmit} className="space-y-2 md:space-y-3">
                         <input
                           type="email"
                           value={newsletterEmail}
                           onChange={(e) => setNewsletterEmail(e.target.value)}
                           placeholder="Enter your email"
                           disabled={newsletterStatus === 'loading'}
-                          className="w-full px-4 py-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm disabled:opacity-50"
+                          className="w-full px-3 py-2.5 md:px-4 md:py-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white placeholder-secondary-400 focus:outline-none focus:ring-1 focus:ring-primary-500 text-sm transition-shadow"
                           required
                         />
                         <button
                           type="submit"
                           disabled={newsletterStatus === 'loading'}
-                          className="w-full btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full btn-primary py-2.5 text-sm font-medium shadow-sm hover:shadow-md transition-all rounded-lg"
                         >
                           {newsletterStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
                         </button>
@@ -357,8 +355,8 @@ const HomePage: React.FC<HomePageProps> = ({
                           </p>
                         )}
                       </form>
-                      <p className="text-xs text-secondary-500 mt-3">
-                        Free. No spam. Unsubscribe anytime.
+                      <p className="text-[10px] text-secondary-400 mt-2 text-center">
+                        No spam. Unsubscribe anytime.
                       </p>
                     </div>
                   </div>

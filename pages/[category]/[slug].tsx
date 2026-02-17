@@ -529,58 +529,41 @@ const ArticlePage = () => {
             </div>
           </div>
 
-          <div className="container-custom py-4 md:py-8">
+          <div className="container-custom py-3 md:py-6">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-12">
               {/* Main Content */}
               <article className="lg:col-span-3">
                 <div className="max-w-4xl">
-                  {/* Category Badge */}
-                  <div className="mb-2 md:mb-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs md:text-sm font-medium ${getCategoryColor(article.category)} text-white`}>
-                      <span className="mr-1.5">{getCategoryIcon(article.category)}</span>
+                  {/* Category Badge - tighter spacing */}
+                  <div className="mb-2">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold ${getCategoryColor(article.category)} text-white`}>
                       {article.category}
                     </span>
                   </div>
 
-                  {/* Article Title - First */}
-                  <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold text-secondary-900 dark:text-white mb-3 md:mb-6 font-serif leading-tight">
+                  {/* Article Title - Premium Serif */}
+                  <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-secondary-900 dark:text-white mb-2 md:mb-4 font-serif leading-tight tracking-tight">
                     {article.title}
                   </h1>
 
-                  {/* Article Meta Info */}
-                  <div className="flex flex-col gap-2 md:gap-3 text-secondary-600 dark:text-secondary-400 text-sm mb-4 md:mb-8 border-b border-secondary-100 dark:border-secondary-800 pb-3 md:pb-6">
-                    <div className="flex items-center space-x-2.5 md:space-x-3">
-                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center text-white font-bold text-base md:text-lg">
-                        {article.author.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <span className="block font-semibold text-secondary-900 dark:text-white text-sm md:text-base leading-tight">
-                          By {article.author}
-                        </span>
-                        <span className="text-[10px] md:text-xs text-secondary-500">News Reporter</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-y-1 gap-x-2.5 md:gap-x-4 text-[11px] md:text-sm text-secondary-500 dark:text-secondary-400 mt-1 md:mt-2">
-                      <span className="flex items-center space-x-1">
-                        <Calendar size={12} className="md:w-3.5 md:h-3.5" />
-                        <span className="font-medium">{formatDateIST(article.createdAt)}</span>
-                      </span>
-                      {shouldShowUpdated(article.createdAt, article.updatedAt) && (
-                        <span className="flex items-center space-x-1 text-secondary-400">
-                          <span>•</span>
-                          <span>Updated: {formatDateIST(article.updatedAt)}</span>
-                        </span>
-                      )}
-                      <span className="flex items-center space-x-1">
-                        <span>•</span>
-                        <Clock size={12} className="md:w-3.5 md:h-3.5" />
-                        <span>{readingTime} min read</span>
-                      </span>
-                    </div>
+                  {/* Article Meta Info - Compact */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-secondary-500 dark:text-secondary-400 mb-4 md:mb-6 border-b border-secondary-100 dark:border-secondary-800 pb-3 md:pb-5">
+                    <span className="font-bold text-secondary-900 dark:text-white uppercase tracking-wide">
+                      By {article.author}
+                    </span>
+                    <span className="text-secondary-300 dark:text-secondary-700">|</span>
+                    <span className="flex items-center space-x-1.5">
+                      <Clock size={12} />
+                      <span>{formatDateIST(article.createdAt)}</span>
+                    </span>
+                    <span className="flex items-center space-x-1.5">
+                      <Clock size={12} />
+                      <span>{readingTime} min read</span>
+                    </span>
                   </div>
 
-                  {/* Featured Image - Second */}
-                  <div className="relative w-full aspect-video mb-4 md:mb-8 rounded-lg md:rounded-xl overflow-hidden">
+                  {/* Featured Image - Adjusted aspect ratio */}
+                  <div className="relative w-full aspect-video mb-4 md:mb-8 rounded-lg overflow-hidden shadow-sm">
                     <Image
                       src={getImageUrl(article.imageUrl)}
                       alt={article.title}
@@ -591,9 +574,9 @@ const ArticlePage = () => {
                     />
                   </div>
 
-                  {/* Article Summary (Lead) */}
-                  <div className="mb-8 p-0">
-                    <p className="text-xl md:text-2xl text-secondary-600 dark:text-secondary-300 font-serif leading-relaxed italic border-l-4 border-primary-500 pl-6 py-2">
+                  {/* Article Summary (Lead) - Refined */}
+                  <div className="mb-6 md:mb-8">
+                    <p className="text-lg md:text-2xl text-secondary-700 dark:text-secondary-300 font-serif leading-relaxed italic">
                       {article.summary}
                     </p>
                   </div>
@@ -710,32 +693,32 @@ const ArticlePage = () => {
             </article >
 
   {/* Sidebar */ }
-  < aside className = "lg:col-span-1 space-y-8" >
+  < aside className = "lg:col-span-1 space-y-4 md:space-y-8" >
     {/* Author Card */ }
-    < div className = "card p-6" >
-                <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-4">About the Author</h3>
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">
-                      {article.author.charAt(0).toUpperCase()}
-                    </span>
+    < div className = "card p-4 md:p-6 bg-white dark:bg-secondary-900 border border-secondary-100 dark:border-secondary-800 shadow-sm" >
+                  <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-3 font-serif">About the Author</h3>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-base md:text-lg">
+                        {article.author.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-secondary-900 dark:text-white text-sm md:text-base">{article.author}</h4>
+                      <p className="text-secondary-500 dark:text-secondary-400 text-xs">News Reporter</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-secondary-900 dark:text-white">{article.author}</h4>
-                    <p className="text-secondary-600 dark:text-secondary-400 text-sm">News Reporter</p>
-                  </div>
-                </div>
-              </div >
+                </div >
 
   {/* Related Articles */ }
 {
   relatedArticles.length > 0 && (
-    <div className="card p-6">
-      <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-4 flex items-center">
-        <TrendingUp size={20} className="mr-2" />
+    <div className="card p-4 md:p-6 bg-white dark:bg-secondary-900 shadow-sm">
+      <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-3 flex items-center font-serif">
+        <TrendingUp size={18} className="mr-2 text-primary-600" />
         Related Articles
       </h3>
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         {relatedArticles.slice(0, 3).map((relatedArticle) => (
           <Link
             key={relatedArticle.id}
@@ -743,21 +726,21 @@ const ArticlePage = () => {
             className="block group"
           >
             <div className="flex space-x-3">
-              <div className="relative w-16 h-16 flex-shrink-0">
+              <div className="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-secondary-100 rounded-md overflow-hidden">
                 <Image
                   src={getImageUrl(relatedArticle.imageUrl)}
                   alt={relatedArticle.title}
                   fill
-                  className="object-cover rounded-lg"
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
                   sizes="64px"
                   loading="lazy"
                 />
               </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200 line-clamp-2">
+              <div className="flex-1 min-w-0 pt-0.5">
+                <h4 className="text-xs md:text-sm font-semibold text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200 line-clamp-2 leading-snug">
                   {relatedArticle.title}
                 </h4>
-                <p className="text-xs text-secondary-500 dark:text-secondary-500 mt-1">
+                <p className="text-[10px] text-secondary-500 mt-1">
                   {formatDateIST(relatedArticle.createdAt)}
                 </p>
               </div>
@@ -770,25 +753,25 @@ const ArticlePage = () => {
 }
 
 {/* Newsletter Signup */ }
-<div className="card p-6 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 border-primary-200 dark:border-primary-800">
-  <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-2">
+<div className="card p-4 md:p-6 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 border border-primary-100 dark:border-primary-800/50">
+  <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-2 font-serif">
     Stay Updated
   </h3>
-  <p className="text-secondary-600 dark:text-secondary-400 text-sm mb-4">
-    Get the latest news delivered straight to your inbox.
+  <p className="text-secondary-600 dark:text-secondary-400 text-xs md:text-sm mb-3">
+    Latest news delivered to you.
   </p>
-  <form className="space-y-3">
+  <form className="space-y-2">
     <input
       type="email"
-      placeholder="Your email address"
-      className="w-full px-3 py-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+      placeholder="Your email"
+      className="w-full px-3 py-2 rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white placeholder-secondary-400 focus:outline-none focus:ring-1 focus:ring-primary-500 text-xs md:text-sm"
     />
-    <button type="submit" className="w-full btn-primary text-sm">
+    <button type="submit" className="w-full btn-primary py-2 text-xs md:text-sm font-medium">
       Subscribe
     </button>
   </form>
 </div>
-            </aside >
+              </aside >
           </div >
         </div >
       </div >
