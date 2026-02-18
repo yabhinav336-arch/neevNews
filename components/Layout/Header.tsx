@@ -214,11 +214,11 @@ const Header: React.FC = () => {
                   className="w-full h-full object-contain drop-shadow-sm"
                 />
               </div>
-              <div className="flex flex-col">
-                <h1 className="text-xl lg:text-2xl font-bold text-secondary-900 dark:text-white font-serif">
+              <div className="flex flex-col overflow-hidden">
+                <h1 className="text-xl lg:text-2xl font-bold text-secondary-900 dark:text-white font-serif leading-none whitespace-nowrap">
                   Neev News
                 </h1>
-                <span className="text-xs text-secondary-500 dark:text-secondary-400 -mt-1 hidden sm:block">
+                <span className="text-[10px] lg:text-xs text-secondary-500 dark:text-secondary-400 hidden sm:block leading-tight whitespace-nowrap">
                   Global News & Articles
                 </span>
               </div>

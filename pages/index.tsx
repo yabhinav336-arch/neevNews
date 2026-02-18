@@ -398,10 +398,10 @@ const HomePage: React.FC<HomePageProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {latestNews.slice(0, visibleCount).map((article) => (
-                <article key={article.id} className="group">
-                  <Link href={getArticleUrl(article)}>
-                    <div className="card-hover overflow-hidden">
-                      <div className="relative aspect-[16/10] overflow-hidden">
+                <article key={article.id} className="group flex">
+                  <Link href={getArticleUrl(article)} className="flex flex-col w-full">
+                    <div className="card-hover overflow-hidden flex flex-col h-full">
+                      <div className="relative aspect-[16/10] overflow-hidden flex-shrink-0">
                         <Image
                           src={getImageUrl(article.imageUrl)}
                           alt={article.title}
@@ -428,7 +428,7 @@ const HomePage: React.FC<HomePageProps> = ({
                           </span>
                         </div>
                       </div>
-                      <div className="p-3 md:p-4">
+                      <div className="p-3 md:p-4 flex flex-col flex-1">
                         <h3 className="text-base font-semibold text-secondary-900 dark:text-white mb-2 line-clamp-2 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                           {article.title}
                         </h3>
@@ -513,10 +513,10 @@ const HomePage: React.FC<HomePageProps> = ({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     {articles.map((article) => (
-                      <article key={article.id} className="group">
-                        <Link href={getArticleUrl(article)}>
-                          <div className="card-hover overflow-hidden">
-                            <div className="relative aspect-[16/10] overflow-hidden">
+                      <article key={article.id} className="group flex">
+                        <Link href={getArticleUrl(article)} className="flex flex-col w-full">
+                          <div className="card-hover overflow-hidden flex flex-col h-full">
+                            <div className="relative aspect-[16/10] overflow-hidden flex-shrink-0">
                               <Image
                                 src={getImageUrl(article.imageUrl)}
                                 alt={article.title}
@@ -534,7 +534,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 </div>
                               )}
                             </div>
-                            <div className="p-3 md:p-4">
+                            <div className="p-3 md:p-4 flex flex-col flex-1">
                               <h3 className="text-sm font-semibold text-secondary-900 dark:text-white mb-1 md:mb-2 line-clamp-2 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                                 {article.title}
                               </h3>
