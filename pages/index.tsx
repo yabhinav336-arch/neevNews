@@ -67,14 +67,14 @@ const HomePage: React.FC<HomePageProps> = ({
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState('');
-  const [visibleCount, setVisibleCount] = useState(12);
+  const [visibleCount, setVisibleCount] = useState(40);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const handleLoadMore = useCallback(() => {
     setIsLoadingMore(true);
     // Small delay for a smoother UX feel
     setTimeout(() => {
-      setVisibleCount(prev => prev + 12);
+      setVisibleCount(prev => prev + 40);
       setIsLoadingMore(false);
     }, 400);
   }, []);
@@ -481,7 +481,7 @@ const HomePage: React.FC<HomePageProps> = ({
             )}
 
             {/* All loaded message */}
-            {visibleCount >= latestNews.length && latestNews.length > 12 && (
+            {visibleCount >= latestNews.length && latestNews.length > 40 && (
               <div className="text-center mt-8">
                 <p className="text-sm text-secondary-500 dark:text-secondary-400">
                   You've seen all {latestNews.length} articles
@@ -612,14 +612,14 @@ export const getStaticProps: GetStaticProps = async () => {
 
     // Latest news logic
     const unpinnedArticles = articles.filter(a => !a.isPinned);
-    const orderedLatest = [...pinnedArticles, ...unpinnedArticles].slice(0, 60);
+    const orderedLatest = [...pinnedArticles, ...unpinnedArticles].slice(0, 200);
 
     // Category grouping
     const categoryNews: { [key: string]: Article[] } = {};
-    categories.slice(0, 4).forEach(cat => {
+    categories.slice(0, 6).forEach(cat => {
       categoryNews[cat.name] = articles
         .filter(a => a.category === cat.name)
-        .slice(0, 4);
+        .slice(0, 8);
     });
 
     return {
