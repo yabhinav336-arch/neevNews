@@ -13,6 +13,9 @@
 
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { NextResponse } from 'next/server';
+
+export const runtime = 'edge';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyDTAjMPLylkSq3Gjh90ggtW3-c7Mg8Yads',
@@ -26,9 +29,9 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export default async function handler(req, res) {
+export default async function handler(req) {
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
   }
 
   try {
@@ -86,14 +89,21 @@ export default async function handler(req, res) {
     });
 
     // CDN cache: 5 min cache, 10 min stale-while-revalidate
-    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    return res.status(200).json({
-      articles,
-      count: articles.length,
-      cachedAt: new Date().toISOString(),
-    });
+    return NextResponse.json(
+      {
+        articles,
+        count: articles.length,
+        cachedAt: new Date().toISOString(),
+      },
+      {
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error in /api/articles:', error);
-    return res.status(500).json({ error: 'Failed to fetch articles' });
+    return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 });
   }
 }
