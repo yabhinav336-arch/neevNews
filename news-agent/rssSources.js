@@ -7,18 +7,92 @@
 
 module.exports = {
   sources: [
+    // ──────────────── INDIA (priority today) ────────────────
+    {
+      name: 'NDTV India News',
+      url: 'https://feeds.feedburner.com/ndtvnews-india-news',
+      category: 'Politics',
+      maxPerRun: 12,
+    },
+    {
+      name: 'NDTV Latest',
+      url: 'https://feeds.feedburner.com/ndtvnews-latest',
+      category: 'Politics',
+      maxPerRun: 12,
+    },
+    {
+      name: 'NDTV Top Stories',
+      url: 'https://feeds.feedburner.com/ndtvnews-top-stories',
+      category: 'Politics',
+      maxPerRun: 10,
+    },
+    {
+      name: 'NDTV World',
+      url: 'https://feeds.feedburner.com/ndtvnews-world-news',
+      category: 'World',
+      maxPerRun: 10,
+    },
+    {
+      name: 'NDTV Cities',
+      url: 'https://feeds.feedburner.com/ndtvnews-cities-news',
+      category: 'World',
+      maxPerRun: 8,
+    },
+    {
+      name: 'NDTV South India',
+      url: 'https://feeds.feedburner.com/ndtvnews-south',
+      category: 'Politics',
+      maxPerRun: 8,
+    },
+    {
+      name: 'NDTV Business (Profit)',
+      url: 'https://feeds.feedburner.com/ndtvprofit-latest',
+      category: 'Business',
+      maxPerRun: 10,
+    },
+    {
+      name: 'NDTV Tech (Gadgets 360)',
+      url: 'https://feeds.feedburner.com/gadgets360-latest',
+      category: 'Technology',
+      maxPerRun: 10,
+    },
+    {
+      name: 'NDTV Cricket',
+      url: 'https://feeds.feedburner.com/ndtvsports-cricket',
+      category: 'Sports',
+      maxPerRun: 10,
+    },
+    {
+      name: 'NDTV Sports',
+      url: 'https://feeds.feedburner.com/ndtvsports-latest',
+      category: 'Sports',
+      maxPerRun: 8,
+    },
+    {
+      name: 'NDTV People',
+      url: 'https://feeds.feedburner.com/ndtvnews-people',
+      category: 'World',
+      maxPerRun: 6,
+    },
+    {
+      name: 'NDTV Trending',
+      url: 'https://feeds.feedburner.com/ndtvnews-trending-news',
+      category: 'Politics',
+      maxPerRun: 8,
+    },
+
     // ──────────────── POLITICS ────────────────
     {
       name: 'Google News - Top Stories',
       url: 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en',
       category: 'Politics',
-      maxPerRun: 8,
+      maxPerRun: 12,
     },
     {
       name: 'Google News - India',
       url: 'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en',
       category: 'Politics',
-      maxPerRun: 8,
+      maxPerRun: 12,
     },
     {
       name: 'NPR Politics',
@@ -160,10 +234,10 @@ module.exports = {
   // Default image if RSS feed doesn't provide one
   defaultImage: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
 
-  // Maximum articles to publish per day (safety limit)
-  maxArticlesPerDay: 80,
+  // Maximum articles to publish per day (100–400 target for today)
+  maxArticlesPerDay: 400,
 
-  // Maximum articles per category per run (increased to help reach 80/day target)
-  maxPerCategoryPerRun: 8,
+  // Maximum articles per category per run
+  maxPerCategoryPerRun: 15,
 };
 

@@ -1,8 +1,8 @@
 /**
  * RSS News Scheduler
- * 
- * Runs the news agent every 30 minutes.
- * It runs automatically when the script starts.
+ *
+ * Today's mode: run every 15 minutes until 6 PM. Target 100–400 articles.
+ * Uses cron: every 15 min = at :00, :15, :30, :45. Stops after 6 PM run.
  */
 
 const cron = require('node-cron');
@@ -13,6 +13,12 @@ const { rewriteArticlesWithAI } = require('./rewriteWithAI');
 const { fetchImageForArticle, cleanupOldImages } = require('./fetchImage');
 const { uploadImageToFirebase } = require('./uploadImage');
 const rssSources = require('./rssSources');
+
+/** Return true if current time is before 6 PM (18:00) */
+function isBefore6PM() {
+  const now = new Date();
+  return now.getHours() < 18;
+}
 
 /**
  * For each article, search Google Images by headline, download a relevant
@@ -113,19 +119,23 @@ async function runNewsAgent() {
 }
 
 /**
- * Setup cron job to run every 30 minutes
+ * Setup cron: every 15 minutes until 6 PM (target 100–400 articles today)
  */
 function startScheduler() {
   console.log('⏰ Starting RSS News Scheduler...');
-  console.log('   Schedule: Every 30 minutes');
-  console.log('   Next run: immediately, then every 30 min\n');
+  console.log('   Schedule: Every 15 minutes until 6 PM');
+  console.log('   Target today: 100–400 articles\n');
 
   // Run immediately on start
-  runNewsAgent();
+  if (isBefore6PM()) runNewsAgent();
 
-  // Then run every 30 minutes
-  cron.schedule('0,30 * * * *', () => {
-    runNewsAgent();
+  // Every 15 minutes (:00, :15, :30, :45); only run if before 6 PM
+  cron.schedule('0,15,30,45 * * * *', () => {
+    if (isBefore6PM()) {
+      runNewsAgent();
+    } else {
+      console.log('\n⏹️  After 6 PM — skipping run. Restart tomorrow for next day.\n');
+    }
   });
 
   console.log('✅ Scheduler started successfully!\n');

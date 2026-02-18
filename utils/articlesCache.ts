@@ -24,7 +24,7 @@ interface CacheEntry {
   timestamp: number;
 }
 
-const CLIENT_TTL = 3 * 60 * 1000; // 3 minutes
+const CLIENT_TTL = 15 * 1000; // 15 seconds for instant updates
 const CACHE_KEY = 'neevnews_articles_v2';
 
 let memoryCache: CacheEntry | null = null;

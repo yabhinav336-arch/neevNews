@@ -15,9 +15,9 @@ const { db } = require('./firebaseClient');
 
 const CACHE_DIR = path.join(__dirname, '.cache');
 const CACHE_FILE = path.join(CACHE_DIR, 'published.json');
-// Cap title history so we don't block new stories that are similar to very old ones
-// Reduced to allow more articles through for daily 80 article target
-const MAX_TITLES_FOR_SIMILARITY = 1500;
+// Cap title history so we don't block new stories
+// Lower = more articles can pass (today target 100–400)
+const MAX_TITLES_FOR_SIMILARITY = 1200;
 
 // ------------------------------------------------------------------
 // Cache helpers
@@ -103,12 +103,11 @@ async function filterDuplicates(articles) {
   let dupCount = 0;
 
   for (const article of articles) {
-    // Lower similarity threshold (0.85 instead of 0.9) to allow more articles through
-    // This ensures we can consistently publish 80 articles per day
+    // Similarity threshold 0.82 to allow more unique articles (today target 100–400)
     const isDup =
       slugSet.has(article.slug) ||
       (article.sourceUrl && urlSet.has(article.sourceUrl)) ||
-      recentTitles.some((t) => calculateSimilarity(article.title.toLowerCase().trim(), t) > 0.85);
+      recentTitles.some((t) => calculateSimilarity(article.title.toLowerCase().trim(), t) > 0.82);
 
     if (isDup) {
       console.log(`   ⏭️  Duplicate: ${article.title.substring(0, 55)}...`);

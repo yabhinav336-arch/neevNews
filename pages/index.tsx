@@ -557,6 +557,7 @@ const HomePage: React.FC<HomePageProps> = ({
   );
 };
 
+// Use ISR with very short revalidate (5 seconds) for instant updates on Cloudflare Pages
 export const getStaticProps: GetStaticProps = async () => {
   try {
     const newsRef = collection(db, 'news');
@@ -630,7 +631,7 @@ export const getStaticProps: GetStaticProps = async () => {
         pinnedArticles,
         categoryNews
       },
-      revalidate: 60, // IRS: Revalidate every 60 seconds
+      revalidate: 5, // Revalidate every 5 seconds for near-instant updates on Cloudflare Pages
     };
   } catch (error) {
     console.error('Error in getStaticProps:', error);
@@ -643,7 +644,7 @@ export const getStaticProps: GetStaticProps = async () => {
         pinnedArticles: [],
         categoryNews: {}
       },
-      revalidate: 60
+      revalidate: 5
     };
   }
 };

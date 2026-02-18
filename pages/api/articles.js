@@ -88,7 +88,7 @@ export default async function handler(req) {
       return db2 - da;
     });
 
-    // CDN cache: 5 min cache, 10 min stale-while-revalidate
+    // Reduced cache for instant updates: 10 seconds cache, 30 seconds stale-while-revalidate
     return NextResponse.json(
       {
         articles,
@@ -98,7 +98,7 @@ export default async function handler(req) {
       {
         status: 200,
         headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
         },
       }
     );
