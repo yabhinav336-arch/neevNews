@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
     <footer className="bg-secondary-900 dark:bg-secondary-950 text-secondary-300">
       <div className="container-custom">
         {/* Main Footer Content */}
-        <div className="py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="py-8 md:py-12 lg:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center space-x-3 mb-4 group">
@@ -212,47 +212,29 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Footer */}
-        <div className="py-8 border-t border-secondary-800">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-secondary-400 text-sm">
+        <div className="py-6 border-t border-secondary-800">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-secondary-400 text-xs sm:text-sm">
               © {currentYear} NeevNews. All rights reserved.
             </div>
-            <div className="flex items-center space-x-6 text-sm">
-              <Link
-                href="/policy"
-                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
-              >
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs sm:text-sm">
+              <Link href="/policy" className="text-secondary-400 hover:text-primary-400 transition-colors duration-200">
                 Publication Policy
               </Link>
-              <Link
-                href="/editorial-policy"
-                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
-              >
+              <Link href="/editorial-policy" className="text-secondary-400 hover:text-primary-400 transition-colors duration-200">
                 Editorial Policy
               </Link>
-              <Link
-                href="/fact-check-policy"
-                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
-              >
-                Fact-Check Policy
+              <Link href="/fact-check-policy" className="text-secondary-400 hover:text-primary-400 transition-colors duration-200">
+                Fact-Check
               </Link>
-              <Link
-                href="/corrections-policy"
-                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
-              >
-                Corrections Policy
+              <Link href="/corrections-policy" className="text-secondary-400 hover:text-primary-400 transition-colors duration-200">
+                Corrections
               </Link>
-              <Link
-                href="/privacy"
-                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
-              >
-                Privacy Policy
+              <Link href="/privacy" className="text-secondary-400 hover:text-primary-400 transition-colors duration-200">
+                Privacy
               </Link>
-              <Link
-                href="/cookies"
-                className="text-secondary-400 hover:text-primary-400 transition-colors duration-200"
-              >
-                Cookie Policy
+              <Link href="/cookies" className="text-secondary-400 hover:text-primary-400 transition-colors duration-200">
+                Cookies
               </Link>
             </div>
           </div>

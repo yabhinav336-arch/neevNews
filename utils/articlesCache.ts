@@ -2,16 +2,9 @@
  * Client-side articles cache — fetches from /api/articles (NOT Firestore directly)
  *
  * Flow:
- *   Browser → /api/articles (CDN-cached 5 min) → Firestore
+ *   Browser → /api/articles (CDN-cached 10s) → Firestore
  *
- * Firestore reads:
- *   - 1 fetch of N docs every 5 min on the server (CDN miss)
- *   - 0 reads from every visitor's browser
- *
- * Client-side caching on top:
- *   - In-memory cache survives SPA navigation (no re-fetch)
- *   - sessionStorage survives page reload (no re-fetch)
- *   - TTL: 3 min client-side (API has 5 min CDN cache on top)
+ * Client-side TTL: 15 seconds — ensures near-instant visibility of new articles.
  */
 
 interface CachedArticle {
@@ -73,7 +66,7 @@ export async function getCachedArticles(): Promise<CachedArticle[]> {
 
   // 3. Fetch from API route (CDN-cached, NOT direct Firestore)
   try {
-    const res = await fetch('/api/articles');
+    const res = await fetch('/api/articles/', { cache: 'no-store' });
     if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
     const articles: CachedArticle[] = data.articles || [];

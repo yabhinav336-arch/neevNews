@@ -1,13 +1,14 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { NextSeo } from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { GetStaticProps } from 'next';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { categories, getArticleUrl } from '../utils/data';
 import { getImageUrl } from '../utils/images';
 import { subscribeToNewsletter } from '../services/newsletter';
+import { getCachedArticles } from '../utils/articlesCache';
 import Layout from '@/components/Layout/Layout';
 import {
   TrendingUp,
@@ -16,7 +17,6 @@ import {
   ArrowRight,
   ChevronRight,
   ChevronDown,
-  Flame,
   Zap,
   Pin,
   Loader2
@@ -57,18 +57,84 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({
-  featuredArticles,
-  latestNews,
-  trendingArticles,
-  breakingNews,
-  pinnedArticles,
-  categoryNews
+  featuredArticles: ssrFeatured,
+  latestNews: ssrLatest,
+  trendingArticles: ssrTrending,
+  breakingNews: ssrBreaking,
+  pinnedArticles: ssrPinned,
+  categoryNews: ssrCategoryNews
 }) => {
+  const [featuredArticles, setFeaturedArticles] = useState(ssrFeatured);
+  const [latestNews, setLatestNews] = useState(ssrLatest);
+  const [trendingArticles, setTrendingArticles] = useState(ssrTrending);
+  const [breakingNews, setBreakingNews] = useState(ssrBreaking);
+  const [categoryNews, setCategoryNews] = useState(ssrCategoryNews);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState('');
   const [visibleCount, setVisibleCount] = useState(40);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // Client-side refresh: fetch latest articles from API after mount
+  // This ensures Cloudflare Pages (static build) shows fresh data
+  useEffect(() => {
+    const refreshArticles = async () => {
+      try {
+        const allDocs = await getCachedArticles();
+        const articles: Article[] = (allDocs as any[])
+          .filter(d => d.status === 'published')
+          .map(d => ({
+            id: d.id,
+            title: d.title || '',
+            summary: d.summary || '',
+            imageUrl: d.imageUrl || '',
+            category: d.category || '',
+            author: d.author || '',
+            slug: d.slug || '',
+            status: d.status,
+            featured: d.featured || false,
+            isBreaking: d.isBreaking || false,
+            isTrending: d.isTrending || false,
+            isPinned: d.isPinned || false,
+            homepagePosition: d.homepagePosition || 0,
+            views: d.views || 0,
+            likes: d.likes || 0,
+            tags: d.tags || [],
+            keywords: d.keywords || '',
+            metaDescription: d.metaDescription || '',
+            createdAt: d.createdAt || new Date().toISOString(),
+            publishedAt: d.publishedAt || null,
+          }))
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        if (articles.length === 0) return;
+
+        const breaking = articles.filter(a => a.isBreaking);
+        const featured = articles.filter(a => a.featured).slice(0, 3);
+        const trending = articles.filter(a => a.isTrending);
+        const trendingList = trending.length > 0 ? trending.slice(0, 5) : articles.slice(0, 5);
+        const pinned = articles.filter(a => a.isPinned);
+        const unpinned = articles.filter(a => !a.isPinned);
+        const latest = [...pinned, ...unpinned].slice(0, 200);
+
+        const catNews: { [key: string]: Article[] } = {};
+        categories.slice(0, 6).forEach(cat => {
+          catNews[cat.name] = articles.filter(a => a.category === cat.name).slice(0, 8);
+        });
+
+        setFeaturedArticles(featured.length > 0 ? featured : ssrFeatured);
+        setLatestNews(latest);
+        setTrendingArticles(trendingList);
+        setBreakingNews(breaking);
+        setCategoryNews(catNews);
+      } catch (err) {
+        console.error('Client-side refresh failed:', err);
+      }
+    };
+
+    refreshArticles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLoadMore = useCallback(() => {
     setIsLoadingMore(true);
@@ -221,8 +287,8 @@ const HomePage: React.FC<HomePageProps> = ({
           {/* Hero Section - Main Featured Story */}
           {featuredArticles.length > 0 && (
             <section className="relative bg-gradient-to-b from-secondary-50 to-white dark:from-secondary-900 dark:to-secondary-950">
-              <div className="container-custom py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="container-custom py-4 md:py-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                   {/* Main Featured Article */}
                   <div className="lg:col-span-2">
                     <Link href={getArticleUrl(featuredArticles[0])} className="group">
@@ -303,7 +369,7 @@ const HomePage: React.FC<HomePageProps> = ({
                   </div>
 
                   {/* Sidebar - Trending & Newsletter */}
-                  <div className="space-y-4 md:space-y-6">
+                  <div className="space-y-3 md:space-y-4">
                     {/* Trending Now */}
                     <div className="card p-4 md:p-6 bg-white dark:bg-secondary-800 shadow-sm border border-secondary-100 dark:border-secondary-700/50">
                       <div className="flex items-center space-x-2 mb-3 md:mb-4">
@@ -379,8 +445,8 @@ const HomePage: React.FC<HomePageProps> = ({
           )}
 
           {/* Latest News Grid */}
-          <section className="container-custom py-4 md:py-12">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4 md:mb-8">
+          <section className="container-custom py-4 md:py-8">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3 md:mb-5">
               <div className="flex items-center space-x-2 md:space-x-3">
                 <div className="w-1 h-6 md:h-8 bg-gradient-to-b from-primary-500 to-accent-500 rounded-full"></div>
                 <h2 className="text-xl md:text-3xl font-bold text-secondary-900 dark:text-white font-serif">
@@ -396,56 +462,56 @@ const HomePage: React.FC<HomePageProps> = ({
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-5">
               {latestNews.slice(0, visibleCount).map((article) => (
                 <article key={article.id} className="group flex">
                   <Link href={getArticleUrl(article)} className="flex flex-col w-full">
                     <div className="card-hover overflow-hidden flex flex-col h-full">
-                      <div className="relative aspect-[16/10] overflow-hidden flex-shrink-0">
+                      <div className="relative aspect-[3/2] overflow-hidden flex-shrink-0">
                         <Image
                           src={getImageUrl(article.imageUrl)}
                           alt={article.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                           loading="lazy"
                         />
-                        <div className="absolute top-2 left-2 flex items-center space-x-2">
+                        <div className="absolute top-1.5 left-1.5 flex items-center gap-1">
                           {article.isPinned && (
-                            <span className="px-2 py-1 bg-blue-600 text-white text-[10px] font-medium rounded flex items-center space-x-1">
-                              <Pin size={10} />
-                              <span>Pinned</span>
+                            <span className="px-1.5 py-0.5 bg-blue-600 text-white text-[9px] font-medium rounded flex items-center gap-0.5">
+                              <Pin size={8} />
+                              <span className="hidden sm:inline">Pinned</span>
                             </span>
                           )}
                           {article.isBreaking && (
-                            <span className="px-2 py-1 bg-red-600 text-white text-[10px] font-medium rounded flex items-center space-x-1">
-                              <Zap size={10} className="fill-current" />
-                              <span>Breaking</span>
+                            <span className="px-1.5 py-0.5 bg-red-600 text-white text-[9px] font-medium rounded flex items-center gap-0.5">
+                              <Zap size={8} className="fill-current" />
+                              <span className="hidden sm:inline">Breaking</span>
                             </span>
                           )}
-                          <span className={`px-2 py-1 text-white text-[10px] font-medium rounded ${getCategoryColor(article.category)}`}>
+                          <span className={`px-1.5 py-0.5 text-white text-[9px] font-medium rounded ${getCategoryColor(article.category)}`}>
                             {article.category}
                           </span>
                         </div>
                       </div>
-                      <div className="p-3 md:p-4 flex flex-col flex-1">
-                        <h3 className="text-base font-semibold text-secondary-900 dark:text-white mb-2 line-clamp-2 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
+                      <div className="p-2 sm:p-3 md:p-4 flex flex-col flex-1">
+                        <h3 className="text-xs sm:text-sm font-semibold text-secondary-900 dark:text-white mb-1 line-clamp-2 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                           {article.title}
                         </h3>
-                        <p className="text-secondary-600 dark:text-secondary-400 text-xs md:text-sm line-clamp-2 mb-2 md:mb-3">
+                        <p className="text-secondary-600 dark:text-secondary-400 text-[10px] sm:text-xs line-clamp-2 mb-1.5 hidden sm:block">
                           {article.summary}
                         </p>
-                        <div className="flex items-center text-[10px] md:text-xs text-secondary-500">
-                          <span className="flex items-center space-x-1">
-                            <Clock size={12} />
+                        <div className="flex items-center text-[9px] sm:text-[10px] md:text-xs text-secondary-500 mt-auto">
+                          <span className="flex items-center gap-1">
+                            <Clock size={10} />
                             <span>{formatTimeAgo(article.createdAt)}</span>
                           </span>
                           {article.isTrending && (
                             <>
-                              <span className="mx-2">•</span>
-                              <span className="flex items-center space-x-1 text-orange-600">
-                                <TrendingUp size={12} />
-                                <span>Trending</span>
+                              <span className="mx-1.5">·</span>
+                              <span className="flex items-center gap-0.5 text-orange-600">
+                                <TrendingUp size={10} />
+                                <span className="hidden sm:inline">Trending</span>
                               </span>
                             </>
                           )}
@@ -459,7 +525,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
             {/* Load More Button */}
             {visibleCount < latestNews.length && (
-              <div className="flex justify-center mt-8 md:mt-12">
+              <div className="flex justify-center mt-6 md:mt-8">
                 <button
                   onClick={handleLoadMore}
                   disabled={isLoadingMore}
@@ -482,7 +548,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
             {/* All loaded message */}
             {visibleCount >= latestNews.length && latestNews.length > 40 && (
-              <div className="text-center mt-8">
+              <div className="text-center mt-6">
                 <p className="text-sm text-secondary-500 dark:text-secondary-400">
                   You've seen all {latestNews.length} articles
                 </p>
@@ -493,52 +559,52 @@ const HomePage: React.FC<HomePageProps> = ({
           {/* Category Sections */}
           {Object.entries(categoryNews).map(([categoryName, articles]) => (
             articles.length > 0 && (
-              <section key={categoryName} className="bg-secondary-50 dark:bg-secondary-900/50 py-6 md:py-12">
+              <section key={categoryName} className="bg-secondary-50 dark:bg-secondary-900/50 py-4 md:py-8">
                 <div className="container-custom">
-                  <div className="flex items-center justify-between mb-4 md:mb-8">
-                    <div className="flex items-center space-x-2 md:space-x-3">
-                      <div className="w-1 h-6 md:h-8 bg-gradient-to-b from-primary-500 to-accent-500 rounded-full"></div>
-                      <h2 className="text-lg md:text-2xl font-bold text-secondary-900 dark:text-white font-serif">
+                  <div className="flex items-center justify-between mb-3 md:mb-5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-5 md:h-7 bg-gradient-to-b from-primary-500 to-accent-500 rounded-full"></div>
+                      <h2 className="text-base md:text-xl lg:text-2xl font-bold text-secondary-900 dark:text-white font-serif">
                         {categoryName}
                       </h2>
                     </div>
                     <Link
                       href={`/category/${categories.find(c => c.name === categoryName)?.slug}`}
-                      className="flex items-center space-x-1 md:space-x-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium text-xs md:text-sm transition-colors duration-200"
+                      className="flex items-center gap-1 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium text-xs md:text-sm transition-colors duration-200"
                     >
-                      <span>More {categoryName}</span>
+                      <span>More</span>
                       <ChevronRight size={14} />
                     </Link>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-5">
                     {articles.map((article) => (
                       <article key={article.id} className="group flex">
                         <Link href={getArticleUrl(article)} className="flex flex-col w-full">
                           <div className="card-hover overflow-hidden flex flex-col h-full">
-                            <div className="relative aspect-[16/10] overflow-hidden flex-shrink-0">
+                            <div className="relative aspect-[3/2] overflow-hidden flex-shrink-0">
                               <Image
                                 src={getImageUrl(article.imageUrl)}
                                 alt={article.title}
                                 fill
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                 loading="lazy"
                               />
                               {article.isTrending && (
-                                <div className="absolute top-2 left-2">
-                                  <span className="px-2 py-1 bg-orange-600 text-white text-[10px] font-medium rounded flex items-center space-x-1">
-                                    <TrendingUp size={10} />
+                                <div className="absolute top-1.5 left-1.5">
+                                  <span className="px-1.5 py-0.5 bg-orange-600 text-white text-[9px] font-medium rounded flex items-center gap-0.5">
+                                    <TrendingUp size={8} />
                                     <span>Trending</span>
                                   </span>
                                 </div>
                               )}
                             </div>
-                            <div className="p-3 md:p-4 flex flex-col flex-1">
-                              <h3 className="text-sm font-semibold text-secondary-900 dark:text-white mb-1 md:mb-2 line-clamp-2 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
+                            <div className="p-2 sm:p-3 md:p-4 flex flex-col flex-1">
+                              <h3 className="text-xs sm:text-sm font-semibold text-secondary-900 dark:text-white mb-1 line-clamp-2 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                                 {article.title}
                               </h3>
-                              <div className="flex items-center text-[10px] md:text-xs text-secondary-500">
+                              <div className="flex items-center text-[9px] sm:text-[10px] md:text-xs text-secondary-500 mt-auto">
                                 <span>{formatTimeAgo(article.createdAt)}</span>
                               </div>
                             </div>
