@@ -129,6 +129,7 @@ const cleanArticleContent = (content: string): string => {
 const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [copiedToast, setCopiedToast] = useState(false);
 
   const wordCount = article.content?.split(' ').length || 0;
   const readingTime = Math.ceil(wordCount / 200);
@@ -177,12 +178,19 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
         );
         break;
       case 'linkedin': {
-        // LinkedIn: pre-fill post with headline, summary, hashtags, and full link
+        // LinkedIn: copy rich text to clipboard, then open compose
         const liText = `${title}\n\n${summary}\n\n${hashtagString} #NeevNews\n\n🔗 ${url}`;
-        window.open(
-          `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(liText)}`,
-          '_blank', 'noopener,noreferrer'
-        );
+        navigator.clipboard.writeText(liText).then(() => {
+          setCopiedToast(true);
+          setTimeout(() => setCopiedToast(false), 4000);
+        }).catch(() => { });
+        // Open LinkedIn share after a short delay so user sees the toast
+        setTimeout(() => {
+          window.open(
+            `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+            '_blank', 'noopener,noreferrer'
+          );
+        }, 300);
         break;
       }
       case 'whatsapp': {
@@ -518,6 +526,13 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
                     </div>
                   </div>
                 </div>
+
+                {/* Clipboard Toast for LinkedIn */}
+                {copiedToast && (
+                  <div className="mt-3 px-4 py-2.5 bg-blue-600 text-white text-sm rounded-lg flex items-center space-x-2 animate-pulse shadow-lg">
+                    <span>✅ Post text copied! Paste it in the LinkedIn compose box</span>
+                  </div>
+                )}
               </div>
             </article>
 
