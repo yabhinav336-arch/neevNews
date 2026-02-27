@@ -4,16 +4,16 @@ import Link from 'next/link';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { categories } from '../utils/data';
-import { 
-  Plus, 
-  Upload, 
-  Eye, 
-  Save, 
-  AlertCircle, 
-  CheckCircle, 
-  List, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Upload,
+  Eye,
+  Save,
+  AlertCircle,
+  CheckCircle,
+  List,
+  Edit,
+  Trash2,
   ArrowLeft,
   LayoutDashboard,
   Newspaper,
@@ -79,9 +79,10 @@ const Admin = () => {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [saving, setSaving] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     title: '',
+    slug: '',
     summary: '',
     content: '',
     imageUrl: '',
@@ -97,7 +98,7 @@ const Admin = () => {
     isPinned: false,
     homepagePosition: 0
   });
-  
+
   const [imagePreview, setImagePreview] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -112,10 +113,17 @@ const Admin = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      };
+      // Auto-generate slug from title if slug is empty or was auto-generated
+      if (name === 'title' && (!prev.slug || prev.slug === prev.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))) {
+        updated.slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      }
+      return updated;
+    });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,11 +161,12 @@ const Admin = () => {
     try {
       const docRef = doc(db, 'news', storyId);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         const story = docSnap.data();
         setFormData({
           title: story.title || '',
+          slug: story.slug || '',
           summary: story.summary || '',
           content: story.content || '',
           imageUrl: story.imageUrl || '',
@@ -273,6 +282,7 @@ const Admin = () => {
   const resetForm = () => {
     setFormData({
       title: '',
+      slug: '',
       summary: '',
       content: '',
       imageUrl: '',
@@ -345,7 +355,7 @@ const Admin = () => {
         isPinned: formData.isPinned,
         homepagePosition: formData.homepagePosition,
         updatedAt: new Date(),
-        slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        slug: (formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')).substring(0, 100),
       };
 
       if (editingStoryId) {
@@ -353,7 +363,7 @@ const Admin = () => {
         const docRef = doc(db, 'news', editingStoryId);
         await updateDoc(docRef, articleData);
         setSubmitStatus('success');
-        
+
         setTimeout(() => {
           setView('list');
           fetchStories();
@@ -368,7 +378,7 @@ const Admin = () => {
           views: 0,
           likes: 0
         };
-        
+
         await addDoc(collection(db, 'news'), newArticleData);
         setSubmitStatus('success');
         resetForm();
@@ -386,7 +396,7 @@ const Admin = () => {
   // Filter stories
   const filteredStories = stories.filter(story => {
     const matchesSearch = story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         story.summary.toLowerCase().includes(searchQuery.toLowerCase());
+      story.summary.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory === 'all' || story.category === filterCategory;
     const matchesStatus = filterStatus === 'all' || story.status === filterStatus;
     return matchesSearch && matchesCategory && matchesStatus;
@@ -406,9 +416,9 @@ const Admin = () => {
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
     const d = date.toDate ? date.toDate() : new Date(date);
-    return d.toLocaleDateString('en-IN', { 
-      day: 'numeric', 
-      month: 'short', 
+    return d.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -419,13 +429,13 @@ const Admin = () => {
   const triggerRssAgent = async () => {
     setRssAgentStatus('running');
     setRssAgentResult(null);
-    
+
     try {
       const response = await fetch('/api/rss-agent');
       const result = await response.json();
-      
+
       setRssAgentResult(result);
-      
+
       if (result.success) {
         setRssAgentStatus('success');
         // Refresh articles after successful fetch
@@ -461,7 +471,7 @@ const Admin = () => {
         <meta name="description" content="Content Management System for Neev News" />
         <meta name="robots" content="noindex, nofollow" />
       </Head>
-      
+
       <div className="min-h-screen bg-secondary-100 dark:bg-secondary-900 flex">
         {/* Sidebar */}
         <aside className="w-64 bg-secondary-900 dark:bg-secondary-950 text-white flex-shrink-0 fixed h-full">
@@ -474,7 +484,7 @@ const Admin = () => {
               </div>
             </div>
           </div>
-          
+
           <nav className="p-4 space-y-2">
             {navItems.map((item) => (
               <button
@@ -484,11 +494,10 @@ const Admin = () => {
                   if (item.id === 'create') resetForm();
                   if (item.id === 'list' || item.id === 'homepage' || item.id === 'featured') fetchStories();
                 }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
-                  view === item.id
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${view === item.id
                     ? 'bg-primary-600 text-white'
                     : 'text-secondary-300 hover:bg-secondary-800 hover:text-white'
-                }`}
+                  }`}
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -632,11 +641,10 @@ const Admin = () => {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 text-xs rounded ${
-                            story.status === 'published'
+                          <span className={`px-2 py-1 text-xs rounded ${story.status === 'published'
                               ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                               : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                          }`}>
+                            }`}>
                             {story.status}
                           </span>
                           <button
@@ -684,11 +692,10 @@ const Admin = () => {
                     {rssAgentStatus === 'running' ? 'Please wait...' : 'Auto-fetch and publish news from RSS feeds'}
                   </p>
                   {rssAgentResult && (
-                    <div className={`mt-3 text-xs p-2 rounded ${
-                      rssAgentResult.success 
+                    <div className={`mt-3 text-xs p-2 rounded ${rssAgentResult.success
                         ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                         : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                    }`}>
+                      }`}>
                       {rssAgentResult.saved > 0 && (
                         <div>✅ Saved: {rssAgentResult.saved} articles</div>
                       )}
@@ -835,11 +842,10 @@ const Admin = () => {
                           <td className="p-4">
                             <button
                               onClick={() => togglePublish(story.id, story.status)}
-                              className={`px-2 py-1 text-xs rounded font-medium ${
-                                story.status === 'published'
+                              className={`px-2 py-1 text-xs rounded font-medium ${story.status === 'published'
                                   ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                                   : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                              }`}
+                                }`}
                             >
                               {story.status}
                             </button>
@@ -919,20 +925,18 @@ const Admin = () => {
                   {stories.filter(s => s.status === 'published').map((story) => (
                     <div
                       key={story.id}
-                      className={`flex items-center justify-between p-4 rounded-lg border ${
-                        story.isBreaking
+                      className={`flex items-center justify-between p-4 rounded-lg border ${story.isBreaking
                           ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20'
                           : 'border-secondary-200 dark:border-secondary-700'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => toggleBreaking(story.id, story.isBreaking || false)}
-                          className={`p-2 rounded-lg transition-colors duration-200 ${
-                            story.isBreaking
+                          className={`p-2 rounded-lg transition-colors duration-200 ${story.isBreaking
                               ? 'bg-red-600 text-white'
                               : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
-                          }`}
+                            }`}
                         >
                           <Zap size={18} />
                         </button>
@@ -969,20 +973,18 @@ const Admin = () => {
                   {stories.filter(s => s.status === 'published').map((story) => (
                     <div
                       key={story.id}
-                      className={`flex items-center justify-between p-4 rounded-lg border ${
-                        story.featured
+                      className={`flex items-center justify-between p-4 rounded-lg border ${story.featured
                           ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20'
                           : 'border-secondary-200 dark:border-secondary-700'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => toggleFeatured(story.id, story.featured)}
-                          className={`p-2 rounded-lg transition-colors duration-200 ${
-                            story.featured
+                          className={`p-2 rounded-lg transition-colors duration-200 ${story.featured
                               ? 'bg-purple-600 text-white'
                               : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
-                          }`}
+                            }`}
                         >
                           <Star size={18} />
                         </button>
@@ -1019,20 +1021,18 @@ const Admin = () => {
                   {stories.filter(s => s.status === 'published').map((story) => (
                     <div
                       key={story.id}
-                      className={`flex items-center justify-between p-4 rounded-lg border ${
-                        story.isPinned
+                      className={`flex items-center justify-between p-4 rounded-lg border ${story.isPinned
                           ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-secondary-200 dark:border-secondary-700'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => togglePinned(story.id, story.isPinned || false)}
-                          className={`p-2 rounded-lg transition-colors duration-200 ${
-                            story.isPinned
+                          className={`p-2 rounded-lg transition-colors duration-200 ${story.isPinned
                               ? 'bg-blue-600 text-white'
                               : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
-                          }`}
+                            }`}
                         >
                           {story.isPinned ? <Pin size={18} /> : <PinOff size={18} />}
                         </button>
@@ -1078,20 +1078,18 @@ const Admin = () => {
                     {stories.filter(s => s.status === 'published').map((story) => (
                       <div
                         key={story.id}
-                        className={`flex items-center justify-between p-3 rounded-lg border ${
-                          story.isTrending
+                        className={`flex items-center justify-between p-3 rounded-lg border ${story.isTrending
                             ? 'border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20'
                             : 'border-secondary-200 dark:border-secondary-700'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                           <button
                             onClick={() => toggleTrending(story.id, story.isTrending || false)}
-                            className={`p-2 rounded-lg transition-colors duration-200 flex-shrink-0 ${
-                              story.isTrending
+                            className={`p-2 rounded-lg transition-colors duration-200 flex-shrink-0 ${story.isTrending
                                 ? 'bg-orange-600 text-white'
                                 : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
-                            }`}
+                              }`}
                           >
                             <TrendingUp size={16} />
                           </button>
@@ -1120,20 +1118,18 @@ const Admin = () => {
                     {stories.filter(s => s.status === 'published').map((story) => (
                       <div
                         key={story.id}
-                        className={`flex items-center justify-between p-3 rounded-lg border ${
-                          story.featured
+                        className={`flex items-center justify-between p-3 rounded-lg border ${story.featured
                             ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20'
                             : 'border-secondary-200 dark:border-secondary-700'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                           <button
                             onClick={() => toggleFeatured(story.id, story.featured)}
-                            className={`p-2 rounded-lg transition-colors duration-200 flex-shrink-0 ${
-                              story.featured
+                            className={`p-2 rounded-lg transition-colors duration-200 flex-shrink-0 ${story.featured
                                 ? 'bg-purple-600 text-white'
                                 : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
-                            }`}
+                              }`}
                           >
                             <Star size={16} />
                           </button>
@@ -1225,6 +1221,26 @@ const Admin = () => {
                         className="w-full px-4 py-3 border border-secondary-300 dark:border-secondary-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white placeholder-secondary-500 text-lg"
                         required
                       />
+                    </div>
+
+                    {/* Slug */}
+                    <div className="card p-6">
+                      <label htmlFor="slug" className="block text-sm font-semibold text-secondary-900 dark:text-white mb-2">
+                        URL Slug
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-secondary-500 dark:text-secondary-400 text-sm whitespace-nowrap">neevnews.com/{formData.category ? categories.find(c => c.name === formData.category)?.slug || formData.category.toLowerCase() : '...'}/</span>
+                        <input
+                          type="text"
+                          id="slug"
+                          name="slug"
+                          value={formData.slug}
+                          onChange={handleInputChange}
+                          placeholder="auto-generated-from-title"
+                          className="flex-1 px-4 py-3 border border-secondary-300 dark:border-secondary-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white placeholder-secondary-500 font-mono text-sm"
+                        />
+                      </div>
+                      <p className="mt-1 text-xs text-secondary-400">Auto-generated from title. Edit for a custom URL slug.</p>
                     </div>
 
                     {/* Summary */}
@@ -1499,33 +1515,56 @@ const Admin = () => {
                     </div>
                   </div>
 
-                  {/* Preview */}
+                  {/* Google SERP Preview */}
                   <div className="card p-6">
                     <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-4 flex items-center space-x-2">
                       <Eye size={20} />
-                      <span>Preview</span>
+                      <span>Google Search Preview</span>
                     </h3>
+                    <div className="bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-lg p-4">
+                      <p className="text-xs text-green-700 dark:text-green-400 mb-1 truncate">
+                        https://neevnews.com/{formData.category ? (categories.find(c => c.name === formData.category)?.slug || formData.category.toLowerCase()) : '...'}/{formData.slug || '...'}/
+                      </p>
+                      <p className="text-lg text-blue-700 dark:text-blue-400 font-medium leading-snug mb-1 line-clamp-2 hover:underline cursor-pointer">
+                        {formData.title || 'Article Title'}
+                      </p>
+                      <p className="text-sm text-secondary-600 dark:text-secondary-400 line-clamp-2">
+                        {formData.metaDescription || formData.summary || 'Meta description will appear here...'}
+                      </p>
+                    </div>
+                    <p className="mt-2 text-xs text-secondary-400">This is how your article will appear in Google search results.</p>
+                  </div>
+
+                  {/* Article Info Preview */}
+                  <div className="card p-6">
+                    <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-4">Article Info</h3>
                     <div className="space-y-3 text-sm">
-                      <div>
-                        <span className="text-secondary-500">Title:</span>
-                        <p className="text-secondary-900 dark:text-white font-medium">{formData.title || '—'}</p>
-                      </div>
-                      <div>
+                      <div className="flex justify-between">
                         <span className="text-secondary-500">Category:</span>
-                        <p className="text-secondary-900 dark:text-white">{formData.category || '—'}</p>
+                        <span className="text-secondary-900 dark:text-white font-medium">{formData.category || '—'}</span>
                       </div>
-                      <div>
+                      <div className="flex justify-between">
                         <span className="text-secondary-500">Author:</span>
-                        <p className="text-secondary-900 dark:text-white">{formData.author || '—'}</p>
+                        <span className="text-secondary-900 dark:text-white">{formData.author || '—'}</span>
                       </div>
-                      <div>
+                      <div className="flex justify-between">
                         <span className="text-secondary-500">Status:</span>
-                        <span className={`ml-2 px-2 py-0.5 text-xs rounded ${
-                          formData.status === 'published'
+                        <span className={`px-2 py-0.5 text-xs rounded ${formData.status === 'published'
                             ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                             : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                        }`}>
+                          }`}>
                           {formData.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-secondary-500">Meta desc length:</span>
+                        <span className={`font-mono text-xs ${(formData.metaDescription || formData.summary).length > 160
+                            ? 'text-red-500'
+                            : (formData.metaDescription || formData.summary).length > 120
+                              ? 'text-yellow-500'
+                              : 'text-green-500'
+                          }`}>
+                          {(formData.metaDescription || formData.summary).length}/160
                         </span>
                       </div>
                     </div>

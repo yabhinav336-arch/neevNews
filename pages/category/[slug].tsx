@@ -1,116 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getCachedArticles } from '../../utils/articlesCache';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../../utils/firebase';
 import { categories, getArticleUrl } from '../../utils/data';
 import Layout from '../../components/Layout/Layout';
-import { Clock, User, ArrowLeft, Filter, Grid, List } from 'lucide-react';
+import { Clock, User, ArrowLeft, Grid, List } from 'lucide-react';
 
 interface Article {
   id: string;
   title: string;
   summary: string;
-  content: string;
   imageUrl: string;
   category: string;
   author: string;
-  createdAt: any;
+  createdAt: string;
   slug: string;
   views: number;
   status: string;
 }
 
-const CategoryPage = () => {
-  const router = useRouter();
-  const { slug } = router.query;
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
+interface CategoryPageProps {
+  categoryData: {
+    name: string;
+    slug: string;
+    description: string;
+    icon: string;
+    color: string;
+  };
+  articles: Article[];
+}
+
+const CategoryPage: React.FC<CategoryPageProps> = ({ categoryData, articles: initialArticles }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
-  const [categoryData, setCategoryData] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 12;
 
-  useEffect(() => {
-    if (slug) {
-      const category = categories.find(cat => cat.slug === slug);
-      setCategoryData(category);
-      fetchCategoryArticles(category?.name || '');
+  // Sort articles client-side based on user selection
+  const articles = [...initialArticles].sort((a, b) => {
+    if (sortBy === 'latest') {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+    return (b.views || 0) - (a.views || 0);
+  });
 
-  const fetchCategoryArticles = async (categoryName: string) => {
-    setLoading(true);
-    try {
-      const allArticles = await getCachedArticles() as Article[];
-      let fetchedArticles = allArticles.filter(
-        (a) => a.category === categoryName && a.status === 'published'
-      );
-
-      // Sort articles
-      if (sortBy === 'latest') {
-        fetchedArticles = fetchedArticles.sort((a, b) => {
-          const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-          const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-          return dateB.getTime() - dateA.getTime();
-        });
-      } else {
-        fetchedArticles = fetchedArticles.sort((a, b) => (b.views || 0) - (a.views || 0));
-      }
-
-      setArticles(fetchedArticles);
-    } catch (error) {
-      console.error('Error fetching category articles:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (categoryData) {
-      fetchCategoryArticles(categoryData.name);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortBy, categoryData?.name]);
-
-  const formatTimeAgo = (date: any) => {
+  const formatTimeAgo = (date: string) => {
     if (!date) return '';
-    const dateObj = date?.toDate ? date.toDate() : new Date(date);
+    const dateObj = new Date(date);
     const seconds = Math.floor((new Date().getTime() - dateObj.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
     return `${Math.floor(seconds / 86400)}d ago`;
   };
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
-          <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!categoryData) {
-    return (
-      <Layout>
-        <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4">Category not found</h1>
-            <Link href="/" className="btn-primary">
-              Back to Home
-            </Link>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout
@@ -121,6 +67,7 @@ const CategoryPage = () => {
       <Head>
         <meta property="og:title" content={`${categoryData.name} News - NeevNews`} />
         <meta property="og:description" content={categoryData.description} />
+        <link rel="canonical" href={`https://neevnews.com/category/${categoryData.slug}/`} />
       </Head>
 
       <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900">
@@ -134,7 +81,7 @@ const CategoryPage = () => {
               <ArrowLeft size={18} />
               <span>Back to Home</span>
             </Link>
-            
+
             <div className="flex items-center space-x-4 mb-4">
               <div className={`w-16 h-16 ${categoryData.color} rounded-2xl flex items-center justify-center`}>
                 <span className="text-white text-3xl">{categoryData.icon}</span>
@@ -167,11 +114,10 @@ const CategoryPage = () => {
                     setSortBy('latest');
                     setCurrentPage(1);
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 min-h-[44px] ${
-                    sortBy === 'latest'
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 min-h-[44px] ${sortBy === 'latest'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                  }`}
+                    }`}
                 >
                   Latest
                 </button>
@@ -180,11 +126,10 @@ const CategoryPage = () => {
                     setSortBy('popular');
                     setCurrentPage(1);
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 min-h-[44px] ${
-                    sortBy === 'popular'
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 min-h-[44px] ${sortBy === 'popular'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                  }`}
+                    }`}
                 >
                   Popular
                 </button>
@@ -193,22 +138,20 @@ const CategoryPage = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center ${
-                    viewMode === 'grid'
+                  className={`p-2 rounded-lg transition-colors duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center ${viewMode === 'grid'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                  }`}
+                    }`}
                   aria-label="Grid view"
                 >
                   <Grid size={18} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center ${
-                    viewMode === 'list'
+                  className={`p-2 rounded-lg transition-colors duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center ${viewMode === 'list'
                       ? 'bg-primary-600 text-white'
                       : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                  }`}
+                    }`}
                   aria-label="List view"
                 >
                   <List size={18} />
@@ -325,13 +268,11 @@ const CategoryPage = () => {
                   </button>
                   {Array.from({ length: Math.ceil(articles.length / articlesPerPage) }, (_, i) => i + 1)
                     .filter(page => {
-                      // Show first page, last page, current page, and pages around current
-                      return page === 1 || 
-                             page === Math.ceil(articles.length / articlesPerPage) ||
-                             (page >= currentPage - 1 && page <= currentPage + 1);
+                      return page === 1 ||
+                        page === Math.ceil(articles.length / articlesPerPage) ||
+                        (page >= currentPage - 1 && page <= currentPage + 1);
                     })
                     .map((page, index, array) => {
-                      // Add ellipsis if there's a gap
                       const showEllipsisBefore = index > 0 && page - array[index - 1] > 1;
                       return (
                         <React.Fragment key={page}>
@@ -340,11 +281,10 @@ const CategoryPage = () => {
                           )}
                           <button
                             onClick={() => setCurrentPage(page)}
-                            className={`px-4 py-2 rounded-lg min-h-[44px] min-w-[44px] transition-colors duration-200 ${
-                              currentPage === page
+                            className={`px-4 py-2 rounded-lg min-h-[44px] min-w-[44px] transition-colors duration-200 ${currentPage === page
                                 ? 'bg-primary-600 text-white'
                                 : 'bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700'
-                            }`}
+                              }`}
                             aria-label={`Page ${page}`}
                             aria-current={currentPage === page ? 'page' : undefined}
                           >
@@ -369,6 +309,68 @@ const CategoryPage = () => {
       </div>
     </Layout>
   );
+};
+
+// ─── SSG: Generate category paths ─────────────────────────────────────────────
+export const getStaticPaths: GetStaticPaths = async () => {
+  const paths = categories.map(cat => ({
+    params: { slug: cat.slug },
+  }));
+
+  return { paths, fallback: false };
+};
+
+// ─── SSG: Fetch category articles at build time ───────────────────────────────
+export const getStaticProps: GetStaticProps = async (context) => {
+  const { slug } = context.params as { slug: string };
+
+  const categoryData = categories.find(cat => cat.slug === slug);
+
+  if (!categoryData) {
+    return { notFound: true };
+  }
+
+  try {
+    const q = query(
+      collection(db, 'news'),
+      where('category', '==', categoryData.name),
+      where('status', '==', 'published')
+    );
+    const snapshot = await getDocs(q);
+
+    const articles: Article[] = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      articles.push({
+        id: doc.id,
+        title: data.title || '',
+        summary: data.summary || '',
+        imageUrl: data.imageUrl || '',
+        category: data.category || '',
+        author: data.author || '',
+        slug: data.slug || '',
+        views: data.views || 0,
+        status: data.status || '',
+        createdAt: data.createdAt?.toDate
+          ? data.createdAt.toDate().toISOString()
+          : (data.createdAt || new Date().toISOString()),
+      });
+    });
+
+    // Sort newest first
+    articles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return {
+      props: { categoryData, articles },
+      revalidate: 60, // ISR: refresh every 60 seconds
+    };
+  } catch (error) {
+    console.error('getStaticProps error for category:', slug, error);
+    return {
+      props: { categoryData, articles: [] },
+      revalidate: 60,
+    };
+  }
 };
 
 export default CategoryPage;

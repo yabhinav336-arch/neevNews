@@ -234,8 +234,8 @@ module.exports = {
   // Default image if RSS feed doesn't provide one
   defaultImage: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
 
-  // Maximum articles to publish per day (100–400 target for today)
-  maxArticlesPerDay: 400,
+  // Maximum articles to publish per day
+  maxArticlesPerDay: 50,
 
   // Maximum articles per category per run
   maxPerCategoryPerRun: 15,

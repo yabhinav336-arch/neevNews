@@ -200,8 +200,8 @@ function normalizeArticle(item, source) {
       .trim();
 
     const articleContent = cleanDescription.length > 0
-      ? `${cleanDescription.substring(0, 500)}\n\n---\n\n*This article was automatically sourced from RSS feeds. [Read original article](${link})*`
-      : `${title}\n\n*This article was automatically sourced from RSS feeds. [Read original article](${link})*`;
+      ? cleanDescription.substring(0, 500)
+      : title;
 
     return {
       title: title.trim(),
