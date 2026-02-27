@@ -286,24 +286,24 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
 
         {/* Header Section */}
         <div className="bg-white dark:bg-secondary-950 border-b border-secondary-200 dark:border-secondary-800">
-          <div className="container-custom py-3 md:py-6">
+          <div className="container-custom py-1.5 md:py-2">
             <Link
               href="/"
-              className="inline-flex items-center space-x-1 md:space-x-2 px-0 md:px-4 py-1.5 md:py-2 mb-1 md:mb-6 text-sm text-secondary-600 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              className="inline-flex items-center space-x-1 text-xs text-secondary-500 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={14} />
               <span>Back to News</span>
             </Link>
           </div>
         </div>
 
-        <div className="container-custom py-3 md:py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-12">
+        <div className="container-custom py-3 md:py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8">
             {/* Main Content */}
             <article className="lg:col-span-3">
               <div className="max-w-4xl">
                 {/* Category Badge */}
-                <div className="mb-2">
+                <div className="mb-1">
                   <Link href={`/category/${getCategorySlug(article.category)}/`}>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold ${getCategoryColor(article.category)} text-white`}>
                       {article.category}
@@ -312,37 +312,37 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
                 </div>
 
                 {/* Article Title */}
-                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-secondary-900 dark:text-white mb-2 md:mb-4 font-serif leading-tight tracking-tight">
+                <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-secondary-900 dark:text-white mb-1.5 md:mb-2 font-serif leading-tight tracking-tight">
                   {article.title}
                 </h1>
 
                 {/* Article Meta */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-secondary-500 dark:text-secondary-400 mb-4 md:mb-6 border-b border-secondary-100 dark:border-secondary-800 pb-3 md:pb-5">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] md:text-xs text-secondary-500 dark:text-secondary-400 mb-2 md:mb-3 border-b border-secondary-100 dark:border-secondary-800 pb-2 md:pb-2.5">
                   <span className="font-bold text-secondary-900 dark:text-white uppercase tracking-wide">
                     By {article.author}
                   </span>
                   <span className="text-secondary-300 dark:text-secondary-700">|</span>
-                  <span className="flex items-center space-x-1.5">
-                    <Clock size={12} />
+                  <span className="flex items-center space-x-1">
+                    <Clock size={11} />
                     <span>{formatDateIST(article.createdAt)}</span>
                   </span>
                   {shouldShowUpdated(article.createdAt, article.updatedAt) && (
                     <>
                       <span className="hidden sm:inline text-secondary-300 dark:text-secondary-700">|</span>
-                      <span className="flex items-center space-x-1.5">
-                        <Clock size={12} />
+                      <span className="flex items-center space-x-1">
+                        <Clock size={11} />
                         <span>Updated: {formatDateIST(article.updatedAt)}</span>
                       </span>
                     </>
                   )}
-                  <span className="flex items-center space-x-1.5">
-                    <Clock size={12} />
+                  <span className="flex items-center space-x-1">
+                    <Clock size={11} />
                     <span>{readingTime} min read</span>
                   </span>
                 </div>
 
                 {/* Featured Image */}
-                <div className="relative w-full aspect-video mb-4 md:mb-8 rounded-lg overflow-hidden shadow-sm">
+                <div className="relative w-full aspect-video mb-3 md:mb-4 rounded-lg overflow-hidden shadow-sm">
                   <Image
                     src={getImageUrl(article.imageUrl)}
                     alt={article.title}
@@ -354,8 +354,8 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
                 </div>
 
                 {/* Article Summary (Lead) */}
-                <div className="mb-6 md:mb-8">
-                  <p className="text-lg md:text-2xl text-secondary-700 dark:text-secondary-300 font-serif leading-relaxed italic">
+                <div className="mb-3 md:mb-4">
+                  <p className="text-base md:text-lg text-secondary-700 dark:text-secondary-300 font-serif leading-relaxed italic">
                     {article.summary}
                   </p>
                 </div>
@@ -366,7 +366,7 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
                     const h2Match = line.match(/^## (.+)$/);
                     if (h2Match) {
                       return (
-                        <h2 key={lineIdx} className="text-2xl font-bold text-secondary-900 dark:text-white mt-8 mb-4 font-serif">
+                        <h2 key={lineIdx} className="text-xl font-bold text-secondary-900 dark:text-white mt-5 mb-2 font-serif">
                           {h2Match[1]}
                         </h2>
                       );
@@ -375,8 +375,8 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
                     return (
                       <p
                         key={lineIdx}
-                        className="text-secondary-800 dark:text-secondary-200 leading-[1.8] text-lg md:text-xl font-normal mb-4"
-                        style={{ fontFamily: 'Inter, system-ui, sans-serif', lineHeight: '1.8', letterSpacing: '0.01em' }}
+                        className="text-secondary-800 dark:text-secondary-200 leading-[1.7] text-base md:text-lg font-normal mb-2.5"
+                        style={{ fontFamily: 'Inter, system-ui, sans-serif', lineHeight: '1.7', letterSpacing: '0.01em' }}
                       >
                         {line.split(/(https?:\/\/[^\s]+)/g).map((part, partIdx) => {
                           if (part.match(/https?:\/\/[^\s]+/)) {
@@ -397,7 +397,7 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
 
                 {/* Tags */}
                 {keywordsArr.length > 0 && (
-                  <div className="mb-4 md:mb-8 mt-8">
+                  <div className="mb-3 md:mb-4 mt-4">
                     <div className="flex items-center space-x-2 text-secondary-600 dark:text-secondary-400 mb-2 md:mb-3">
                       <Tag size={16} />
                       <span className="font-semibold text-sm">Tags</span>
@@ -417,7 +417,7 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
                 )}
 
                 {/* Social Actions */}
-                <div className="mt-8 pt-6 border-t border-secondary-200 dark:border-secondary-700">
+                <div className="mt-4 pt-3 border-t border-secondary-200 dark:border-secondary-700">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <button
@@ -471,10 +471,10 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
             </article>
 
             {/* Sidebar */}
-            <aside className="lg:col-span-1 space-y-4 md:space-y-8">
+            <aside className="lg:col-span-1 space-y-3 md:space-y-4">
               {/* Author Card */}
-              <div className="card p-4 md:p-6 bg-white dark:bg-secondary-900 border border-secondary-100 dark:border-secondary-800 shadow-sm">
-                <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-3 font-serif">About the Author</h3>
+              <div className="card p-3 md:p-4 bg-white dark:bg-secondary-900 border border-secondary-100 dark:border-secondary-800 shadow-sm">
+                <h3 className="text-sm md:text-base font-bold text-secondary-900 dark:text-white mb-2 font-serif">About the Author</h3>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-base md:text-lg">
@@ -490,12 +490,12 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
 
               {/* Related Articles */}
               {relatedArticles.length > 0 && (
-                <div className="card p-4 md:p-6 bg-white dark:bg-secondary-900 shadow-sm">
-                  <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-3 flex items-center font-serif">
-                    <TrendingUp size={18} className="mr-2 text-primary-600" />
+                <div className="card p-3 md:p-4 bg-white dark:bg-secondary-900 shadow-sm">
+                  <h3 className="text-sm md:text-base font-bold text-secondary-900 dark:text-white mb-2 flex items-center font-serif">
+                    <TrendingUp size={16} className="mr-1.5 text-primary-600" />
                     Related Articles
                   </h3>
-                  <div className="space-y-3 md:space-y-4">
+                  <div className="space-y-2.5">
                     {relatedArticles.slice(0, 3).map((relatedArticle) => (
                       <Link key={relatedArticle.id} href={getArticleUrl(relatedArticle)} className="block group">
                         <div className="flex space-x-3">
@@ -523,9 +523,9 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
               )}
 
               {/* Newsletter Signup */}
-              <div className="card p-4 md:p-6 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 border border-primary-100 dark:border-primary-800/50">
-                <h3 className="text-base md:text-lg font-bold text-secondary-900 dark:text-white mb-2 font-serif">Stay Updated</h3>
-                <p className="text-secondary-600 dark:text-secondary-400 text-xs md:text-sm mb-3">Latest news delivered to you.</p>
+              <div className="card p-3 md:p-4 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 border border-primary-100 dark:border-primary-800/50">
+                <h3 className="text-sm md:text-base font-bold text-secondary-900 dark:text-white mb-1 font-serif">Stay Updated</h3>
+                <p className="text-secondary-600 dark:text-secondary-400 text-xs mb-2">Latest news delivered to you.</p>
                 <form className="space-y-2">
                   <input
                     type="email"
