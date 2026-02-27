@@ -180,17 +180,31 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
       case 'linkedin': {
         // LinkedIn: copy rich text to clipboard, then open compose
         const liText = `${title}\n\n${summary}\n\n${hashtagString} #NeevNews\n\n🔗 ${url}`;
-        navigator.clipboard.writeText(liText).then(() => {
+        // Robust clipboard copy using hidden textarea (works in all browsers)
+        const textarea = document.createElement('textarea');
+        textarea.value = liText;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
           setCopiedToast(true);
-          setTimeout(() => setCopiedToast(false), 4000);
-        }).catch(() => { });
-        // Open LinkedIn share after a short delay so user sees the toast
+          setTimeout(() => setCopiedToast(false), 5000);
+        } catch (e) {
+          // Fallback: try modern API
+          navigator.clipboard?.writeText(liText).catch(() => { });
+        }
+        document.body.removeChild(textarea);
+        // Open LinkedIn share
         setTimeout(() => {
           window.open(
             `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
             '_blank', 'noopener,noreferrer'
           );
-        }, 300);
+        }, 400);
         break;
       }
       case 'whatsapp': {
