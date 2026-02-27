@@ -283,28 +283,28 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
         <link rel="canonical" href={canonicalUrl} />
 
         {/* Open Graph */}
-        <meta property="og:title" content={article.title} />
-        <meta property="og:description" content={article.metaDescription || article.summary} />
-        <meta property="og:image" content={article.imageUrl} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:site_name" content="Neev News" />
+        <meta property="og:title" content={article.title} key="og:title" />
+        <meta property="og:description" content={article.metaDescription || article.summary} key="og:description" />
+        <meta property="og:image" content={article.imageUrl} key="og:image" />
+        <meta property="og:type" content="article" key="og:type" />
+        <meta property="og:url" content={canonicalUrl} key="og:url" />
+        <meta property="og:site_name" content="Neev News" key="og:site_name" />
         <meta property="article:author" content={article.author} />
         <meta property="article:published_time" content={article.createdAt} />
         {article.updatedAt && <meta property="article:modified_time" content={article.updatedAt} />}
         <meta property="article:section" content={article.category} />
         {article.tags?.map((tag, index) => (
-          <meta key={index} property="article:tag" content={tag} />
+          <meta key={`tag-${index}`} property="article:tag" content={tag} />
         ))}
 
         {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@neevnews" />
-        <meta name="twitter:creator" content="@neevnews" />
-        <meta name="twitter:title" content={article.title} />
-        <meta name="twitter:description" content={article.metaDescription || article.summary} />
-        <meta name="twitter:image" content={article.imageUrl} />
-        <meta name="twitter:image:alt" content={article.title} />
+        <meta name="twitter:card" content="summary_large_image" key="twitter:card" />
+        <meta name="twitter:site" content="@neevnews" key="twitter:site" />
+        <meta name="twitter:creator" content="@neevnews" key="twitter:creator" />
+        <meta name="twitter:title" content={article.title} key="twitter:title" />
+        <meta name="twitter:description" content={article.metaDescription || article.summary} key="twitter:description" />
+        <meta name="twitter:image" content={article.imageUrl} key="twitter:image" />
+        <meta name="twitter:image:alt" content={article.title} key="twitter:image:alt" />
 
         {/* Google News */}
         <meta name="news_keywords" content={article.keywords || article.category} />

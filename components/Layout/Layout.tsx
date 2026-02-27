@@ -31,42 +31,42 @@ const Layout: React.FC<LayoutProps> = ({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="index, follow" />
         <meta name="author" content="NeevNews" />
-        
+
         {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={fullTitle} />
-        <meta property="og:description" content={description} />
-        <meta property="og:image" content={ogImage} />
-        <meta property="og:site_name" content="Neev News" />
-        
+        <meta property="og:type" content="website" key="og:type" />
+        <meta property="og:title" content={fullTitle} key="og:title" />
+        <meta property="og:description" content={description} key="og:description" />
+        <meta property="og:image" content={ogImage} key="og:image" />
+        <meta property="og:site_name" content="Neev News" key="og:site_name" />
+
         {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={fullTitle} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={ogImage} />
-        
+        <meta name="twitter:card" content="summary_large_image" key="twitter:card" />
+        <meta name="twitter:title" content={fullTitle} key="twitter:title" />
+        <meta name="twitter:description" content={description} key="twitter:description" />
+        <meta name="twitter:image" content={ogImage} key="twitter:image" />
+
         {/* Canonical URL */}
         {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
-        
+
         {/* Favicon */}
         <link rel="icon" href="/logo.png" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/logo.png" />
         <link rel="icon" type="image/svg+xml" href="/logo.png" />
-        
+
         {/* RSS Feed */}
         <link rel="alternate" type="application/rss+xml" title="NeevNews RSS Feed" href="/api/rss.xml" />
         <link rel="alternate" type="application/atom+xml" title="NeevNews Atom Feed" href="/api/rss.xml" />
-        
+
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://images.unsplash.com" />
-        
+
         {/* Theme Color */}
         <meta name="theme-color" content="#3b82f6" />
         <meta name="msapplication-TileColor" content="#3b82f6" />
       </Head>
-      
+
       <div className="min-h-screen flex flex-col bg-white dark:bg-secondary-950">
         <Header />
         <main className="flex-1 pt-16 lg:pt-20">
