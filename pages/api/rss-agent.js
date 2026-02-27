@@ -11,7 +11,7 @@
  * OR call manually: https://neevnews.com/api/rss-agent
  */
 
-import { collection, addDoc, getDocs, query, where, limit, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, limit, Timestamp } from 'firebase/firestore/lite';
 import { db } from '../../utils/firebase';
 import { NextResponse } from 'next/server';
 

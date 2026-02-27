@@ -1,4 +1,4 @@
-import { collection, addDoc, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, updateDoc } from 'firebase/firestore/lite';
 import { db } from '../utils/firebase';
 
 export interface NewsletterSubscriber {

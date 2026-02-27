@@ -8,7 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { collection, addDoc, Timestamp } = require('firebase/firestore');
+const { collection, addDoc, Timestamp } = require('firebase/firestore/lite');
 const { db } = require('./firebaseClient');
 const rssSources = require('./rssSources');
 

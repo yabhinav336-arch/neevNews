@@ -19,7 +19,7 @@ require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env'
 
 // Import Firebase admin SDK (we'll use the client SDK in a special way)
 const { initializeApp } = require('firebase/app');
-const { getFirestore } = require('firebase/firestore');
+const { getFirestore } = require('firebase/firestore/lite');
 
 // Firebase configuration (same as your website)
 const firebaseConfig = {

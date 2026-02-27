@@ -3,7 +3,10 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+
+export const config = { runtime: 'experimental-edge' };
+
+import { collection, getDocs, query, where } from 'firebase/firestore/lite';
 import { db } from '../../utils/firebase';
 import { categories } from '../../utils/data';
 import { getImageUrl } from '../../utils/images';

@@ -10,7 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { collection, getDocs, query, limit } = require('firebase/firestore');
+const { collection, getDocs, query, limit } = require('firebase/firestore/lite');
 const { db } = require('./firebaseClient');
 
 const CACHE_DIR = path.join(__dirname, '.cache');

@@ -1,7 +1,9 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore/lite';
 import { db } from '../../utils/firebase';
 import { categories } from '../../utils/data';
+
+export const config = { runtime: 'experimental-edge' };
 
 /**
  * This page exists purely to handle old /article/[slug] URLs.

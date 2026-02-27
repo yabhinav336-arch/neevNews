@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, User, ArrowRight, TrendingUp } from 'lucide-react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore/lite';
 import { db } from '@/utils/firebase';
 import { getArticleUrl } from '@/utils/data';
 import { subscribeToNewsletter } from '../../services/newsletter';

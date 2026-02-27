@@ -3,7 +3,7 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore/lite';
 import { db } from '../../utils/firebase';
 import { categories, getArticleUrl } from '../../utils/data';
 import Layout from '../../components/Layout/Layout';

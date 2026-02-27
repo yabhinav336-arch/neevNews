@@ -3,7 +3,7 @@ import { NextSeo } from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { GetStaticProps } from 'next';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore/lite';
 import { db } from '../utils/firebase';
 import { categories, getArticleUrl } from '../utils/data';
 import { getImageUrl } from '../utils/images';
