@@ -138,29 +138,79 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
 
   const handleLike = () => setIsLiked(!isLiked);
 
+  // Build hashtags from article tags/keywords for social sharing
+  const shareHashtags = (() => {
+    const tags = article.tags?.length
+      ? article.tags
+      : (article.keywords || '').split(',').map((k: string) => k.trim()).filter(Boolean);
+    // Clean tags: remove spaces/special chars, capitalize, limit to 5
+    return tags
+      .slice(0, 5)
+      .map((t: string) => t.replace(/[^a-zA-Z0-9]/g, ''))
+      .filter((t: string) => t.length > 1);
+  })();
+
+  const hashtagString = shareHashtags.map((t: string) => `#${t}`).join(' ');
+  const twitterHashtags = shareHashtags.join(',');
+
   const handleShare = (platform: string) => {
     const url = canonicalUrl;
     const title = article.title;
-    const text = article.summary;
+    const summary = article.summary;
+    const imageUrl = article.imageUrl;
+
     switch (platform) {
-      case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`);
+      case 'twitter': {
+        // Twitter/X: headline + hashtags + link (image auto-pulled from og:image)
+        const tweetText = `${title}\n\n${hashtagString} #NeevNews`;
+        window.open(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(url)}`,
+          '_blank', 'noopener,noreferrer'
+        );
         break;
+      }
       case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+        // Facebook: pulls image/title/description from og: meta tags automatically
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`,
+          '_blank', 'noopener,noreferrer'
+        );
         break;
-      case 'linkedin':
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`);
+      case 'linkedin': {
+        // LinkedIn: title + summary + link (image auto-pulled from og:image)
+        window.open(
+          `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+          '_blank', 'noopener,noreferrer'
+        );
         break;
-      case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`);
+      }
+      case 'whatsapp': {
+        // WhatsApp: rich text with headline, summary, hashtags, and link
+        const waText = `📰 *${title}*\n\n${summary}\n\n${hashtagString}\n\n🔗 Read more: ${url}`;
+        window.open(
+          `https://wa.me/?text=${encodeURIComponent(waText)}`,
+          '_blank', 'noopener,noreferrer'
+        );
         break;
-      case 'telegram':
-        window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`);
+      }
+      case 'telegram': {
+        // Telegram: headline + summary + hashtags + link
+        const tgText = `📰 ${title}\n\n${summary}\n\n${hashtagString}`;
+        window.open(
+          `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(tgText)}`,
+          '_blank', 'noopener,noreferrer'
+        );
         break;
-      case 'email':
-        window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n\n' + url)}`);
+      }
+      case 'email': {
+        // Email: full details with image link
+        const emailBody = `${title}\n\n${summary}\n\n📷 Image: ${imageUrl}\n\n🔗 Read full article: ${url}\n\nTags: ${hashtagString}\n\n— Shared via Neev News (neevnews.com)`;
+        window.open(
+          `mailto:?subject=${encodeURIComponent(`📰 ${title} — Neev News`)}&body=${encodeURIComponent(emailBody)}`,
+          '_self'
+        );
         break;
+      }
     }
     setShowShareMenu(false);
   };
