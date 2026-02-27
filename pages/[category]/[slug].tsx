@@ -177,9 +177,10 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ article, relatedArticles }) =
         );
         break;
       case 'linkedin': {
-        // LinkedIn: title + summary + link (image auto-pulled from og:image)
+        // LinkedIn: pre-fill post with headline, summary, hashtags, and full link
+        const liText = `${title}\n\n${summary}\n\n${hashtagString} #NeevNews\n\n🔗 ${url}`;
         window.open(
-          `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+          `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(liText)}`,
           '_blank', 'noopener,noreferrer'
         );
         break;
