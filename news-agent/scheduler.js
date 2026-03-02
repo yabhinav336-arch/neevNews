@@ -8,7 +8,7 @@
 const cron = require('node-cron');
 const { fetchAllNews } = require('./fetchNews');
 const { filterDuplicates } = require('./dedupe');
-const { saveArticles } = require('./saveArticle');
+const { saveArticles, getEligibleArticles } = require('./saveArticle');
 const { rewriteArticlesWithAI } = require('./rewriteWithAI');
 const { fetchImageForArticle, cleanupOldImages } = require('./fetchImage');
 const { uploadImageToFirebase } = require('./uploadImage');
@@ -71,7 +71,7 @@ async function runNewsAgent() {
     console.log('🚀 NEEV NEWS RSS AGENT - Starting Run');
     console.log('='.repeat(60) + '\n');
 
-    // Step 1: Fetch news from all RSS sources (last 24 hours only)
+    // Step 1: Fetch news from all RSS sources
     const allArticles = await fetchAllNews(rssSources.sources);
 
     if (allArticles.length === 0) {
@@ -90,13 +90,21 @@ async function runNewsAgent() {
     // Step 3: Rewrite with OpenAI (if configured)
     const rewrittenArticles = await rewriteArticlesWithAI(uniqueArticles);
 
-    // Step 4: Fetch relevant images from Google Images & upload to Firebase Storage
-    const articlesWithImages = await fetchImagesForArticles(rewrittenArticles);
+    // Step 4: Check daily & category limits — get only eligible articles
+    const { eligible, skipped } = getEligibleArticles(rewrittenArticles);
 
-    // Step 5: Save to database
+    if (eligible.length === 0) {
+      console.log('⚠️  No eligible articles after limit checks.\n');
+      return;
+    }
+
+    // Step 5: Fetch images ONLY for articles that will actually be published
+    const articlesWithImages = await fetchImagesForArticles(eligible);
+
+    // Step 6: Save to database
     const results = await saveArticles(articlesWithImages);
 
-    // Step 6: Cleanup old cached images from disk
+    // Step 7: Cleanup old cached images from disk
     cleanupOldImages();
 
     // Summary
@@ -106,8 +114,9 @@ async function runNewsAgent() {
     console.log(`📊 Summary:`);
     console.log(`   - Fetched: ${allArticles.length} articles`);
     console.log(`   - Unique (pre-AI): ${uniqueArticles.length} articles`);
+    console.log(`   - Eligible (post-limits): ${eligible.length} articles`);
     console.log(`   - Published: ${results.saved} articles`);
-    console.log(`   - Skipped: ${results.skipped} articles`);
+    console.log(`   - Skipped: ${skipped + results.skipped} articles`);
     console.log(`   - Errors: ${results.errors} articles`);
     console.log('='.repeat(60) + '\n');
 

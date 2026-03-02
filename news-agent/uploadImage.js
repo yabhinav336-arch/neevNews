@@ -21,7 +21,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ref, uploadBytes, getDownloadURL } = require('firebase/storage');
+const { ref, uploadBytes, getDownloadURL, deleteObject } = require('firebase/storage');
 const { storage } = require('./firebaseClient');
 
 /**
@@ -62,7 +62,7 @@ async function uploadImageToFirebase(localPath, slug) {
     console.log('   ☁️  Uploaded to Firebase Storage: ' + filename);
 
     // Clean up local file after successful upload
-    try { fs.unlinkSync(localPath); } catch (_) {}
+    try { fs.unlinkSync(localPath); } catch (_) { }
 
     return downloadUrl;
   } catch (error) {
@@ -76,10 +76,49 @@ async function uploadImageToFirebase(localPath, slug) {
     }
 
     // Clean up local file on failure too
-    try { if (fs.existsSync(localPath)) fs.unlinkSync(localPath); } catch (_) {}
+    try { if (fs.existsSync(localPath)) fs.unlinkSync(localPath); } catch (_) { }
 
     return null;
   }
 }
 
-module.exports = { uploadImageToFirebase };
+/**
+ * Delete an image from Firebase Storage given its download URL.
+ *
+ * Extracts the storage path from a Firebase download URL and deletes the file.
+ * Fails silently if the URL is not a Firebase Storage URL or the file doesn't exist.
+ *
+ * @param {string} imageUrl - The Firebase Storage download URL
+ * @returns {boolean} true if deleted, false otherwise
+ */
+async function deleteImageFromFirebase(imageUrl) {
+  try {
+    if (!imageUrl || !imageUrl.includes('firebasestorage.googleapis.com')) {
+      return false; // Not a Firebase Storage URL, nothing to delete
+    }
+
+    // Extract file path from Firebase download URL
+    // URL format: https://firebasestorage.googleapis.com/v0/b/BUCKET/o/ENCODED_PATH?alt=media&token=...
+    const match = imageUrl.match(/\/o\/([^?]+)/);
+    if (!match || !match[1]) {
+      console.log('   ⚠️  Could not extract storage path from URL');
+      return false;
+    }
+
+    const storagePath = decodeURIComponent(match[1]);
+    const storageRef = ref(storage, storagePath);
+    await deleteObject(storageRef);
+
+    console.log('   🗑️  Deleted from Firebase Storage: ' + storagePath);
+    return true;
+  } catch (error) {
+    if (error.code === 'storage/object-not-found') {
+      console.log('   ℹ️  Image already deleted from Storage');
+      return true; // Already gone, that's fine
+    }
+    console.error('   ❌ Firebase Storage delete failed: ' + error.message);
+    return false;
+  }
+}
+
+module.exports = { uploadImageToFirebase, deleteImageFromFirebase };

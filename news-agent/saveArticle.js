@@ -84,26 +84,24 @@ async function saveArticle(article) {
 }
 
 // ------------------------------------------------------------------
-// Save multiple articles
+// Get eligible articles (pass daily + category limits) WITHOUT saving
 // ------------------------------------------------------------------
 
-async function saveArticles(articles) {
-  console.log('\n💾 Saving articles to database...\n');
+function getEligibleArticles(articles) {
+  console.log('\n📋 Filtering articles by daily & category limits...\n');
 
-  // Check daily limit from local file (zero reads)
   const remaining = getDailyRemaining();
   console.log(`📊 Daily limit: ${rssSources.maxArticlesPerDay - remaining} used, ${remaining} remaining`);
 
   if (remaining <= 0) {
-    console.log('   ⚠️  Daily limit reached. Skipping all.\n');
-    return { total: articles.length, saved: 0, skipped: articles.length, errors: 0 };
+    console.log('   ⚠️  Daily limit reached. No articles eligible.\n');
+    return { eligible: [], skipped: articles.length };
   }
-
-  const results = { total: articles.length, saved: 0, skipped: 0, errors: 0 };
 
   // Category limits (in-memory, no reads)
   const catCounts = {};
   const eligible = [];
+  let skipped = 0;
 
   for (const article of articles) {
     const cat = article.category;
@@ -111,16 +109,29 @@ async function saveArticles(articles) {
     if (catCounts[cat] <= rssSources.maxPerCategoryPerRun) {
       eligible.push(article);
     } else {
-      results.skipped++;
+      skipped++;
     }
   }
 
   // Cap by daily remaining
-  const toSave = eligible.slice(0, remaining);
-  results.skipped += eligible.length - toSave.length;
+  const final = eligible.slice(0, remaining);
+  skipped += eligible.length - final.length;
+
+  console.log(`📊 Eligible: ${final.length} articles, Skipped: ${skipped}\n`);
+  return { eligible: final, skipped };
+}
+
+// ------------------------------------------------------------------
+// Save multiple articles (already filtered & with images)
+// ------------------------------------------------------------------
+
+async function saveArticles(articles) {
+  console.log('\n💾 Saving articles to database...\n');
+
+  const results = { total: articles.length, saved: 0, skipped: 0, errors: 0 };
 
   // Write to Firestore (only writes, zero reads)
-  for (const article of toSave) {
+  for (const article of articles) {
     const ok = await saveArticle(article);
     if (ok) results.saved++;
     else results.errors++;
@@ -134,4 +145,4 @@ async function saveArticles(articles) {
   return results;
 }
 
-module.exports = { saveArticle, saveArticles };
+module.exports = { saveArticle, saveArticles, getEligibleArticles };
