@@ -1,11 +1,12 @@
 /**
  * RSS News Scheduler
  *
- * Today's mode: run every 15 minutes until 6 PM. Target 100–400 articles.
- * Uses cron: every 15 min = at :00, :15, :30, :45. Stops after 6 PM run.
+ * Runs every 15 minutes until 6 PM. Daily limit: 10 articles.
+ * Pings IndexNow + Google after publishing for fast indexing.
  */
 
 const cron = require('node-cron');
+const https = require('https');
 const { fetchAllNews } = require('./fetchNews');
 const { filterDuplicates } = require('./dedupe');
 const { saveArticles, getEligibleArticles } = require('./saveArticle');
@@ -114,6 +115,11 @@ async function runNewsAgent() {
     // Step 7: Cleanup old cached images from disk
     cleanupOldImages();
 
+    // Step 8: Ping search engines for newly published articles
+    if (results.saved > 0) {
+      await pingSearchEngines(articlesWithImages);
+    }
+
     const droppedDuringImageFetch = eligible.length - articlesWithImages.length;
 
     // Summary
@@ -138,12 +144,90 @@ async function runNewsAgent() {
 }
 
 /**
- * Setup cron: every 15 minutes until 6 PM (target 100–400 articles today)
+ * Ping search engines (IndexNow + Google) after publishing articles.
+ * This tells search engines to come crawl the new content ASAP.
+ */
+async function pingSearchEngines(articles) {
+  if (!articles || articles.length === 0) return;
+
+  console.log('\n\ud83d\udd14 Pinging search engines for ' + articles.length + ' new article(s)...\n');
+
+  // Build article URLs
+  const categories = require('./rssSources').sources;
+  const urls = articles.map(function (a) {
+    const catSlug = (a.category || 'news').toLowerCase().replace(/\s+/g, '-');
+    return 'https://neevnews.com/' + catSlug + '/' + a.slug + '/';
+  });
+
+  // 1. Ping IndexNow (Bing, Yandex, DuckDuckGo, etc.)
+  try {
+    const indexNowPayload = JSON.stringify({
+      host: 'neevnews.com',
+      key: 'neevnews-indexnow-key',
+      keyLocation: 'https://neevnews.com/neevnews-indexnow-key.txt',
+      urlList: urls,
+    });
+
+    await new Promise(function (resolve, reject) {
+      const req = https.request({
+        hostname: 'api.indexnow.org',
+        path: '/indexnow',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Length': Buffer.byteLength(indexNowPayload),
+        },
+        timeout: 10000,
+      }, function (res) {
+        console.log('   \u2705 IndexNow response: HTTP ' + res.statusCode);
+        res.resume();
+        resolve();
+      });
+      req.on('error', function (err) {
+        console.log('   \u26a0\ufe0f  IndexNow ping failed: ' + err.message);
+        resolve(); // non-critical, don't fail
+      });
+      req.on('timeout', function () {
+        req.destroy();
+        console.log('   \u26a0\ufe0f  IndexNow ping timed out');
+        resolve();
+      });
+      req.write(indexNowPayload);
+      req.end();
+    });
+  } catch (err) {
+    console.log('   \u26a0\ufe0f  IndexNow error: ' + err.message);
+  }
+
+  // 2. Ping Google to re-crawl the sitemap
+  try {
+    await new Promise(function (resolve) {
+      https.get(
+        'https://www.google.com/ping?sitemap=' + encodeURIComponent('https://neevnews.com/sitemap.xml'),
+        function (res) {
+          console.log('   \u2705 Google sitemap ping: HTTP ' + res.statusCode);
+          res.resume();
+          resolve();
+        }
+      ).on('error', function (err) {
+        console.log('   \u26a0\ufe0f  Google ping failed: ' + err.message);
+        resolve();
+      });
+    });
+  } catch (err) {
+    console.log('   \u26a0\ufe0f  Google ping error: ' + err.message);
+  }
+
+  console.log('   \ud83d\ude80 Search engine pings complete\n');
+}
+
+/**
+ * Setup cron: every 15 minutes until 6 PM (daily limit: 10 articles)
  */
 function startScheduler() {
   console.log('⏰ Starting RSS News Scheduler...');
   console.log('   Schedule: Every 15 minutes until 6 PM');
-  console.log('   Target today: 100–400 articles\n');
+  console.log('   Daily limit: ' + rssSources.maxArticlesPerDay + ' articles\n');
 
   // Run immediately on start
   if (isBefore6PM()) runNewsAgent();

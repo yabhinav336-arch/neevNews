@@ -1,0 +1,30 @@
+# NeevNews — llms.txt
+
+> NeevNews is a global news and articles platform providing up-to-date journalism across politics, world news, business, technology, and sports.
+
+## About
+- Website: https://neevnews.com
+- RSS Feed: https://neevnews.com/rss.xml
+- News Sitemap: https://neevnews.com/sitemap-news.xml
+- Language: English
+- Publisher: NeevNews
+- Contact: abhinavvoicebox@gmail.com
+
+## Content
+NeevNews publishes daily news articles across these categories:
+- Politics (Indian political news and analysis)
+- World (International news and global events)
+- Business (Financial markets, economy, corporate news)
+- Technology (Tech industry, gadgets, digital trends)
+- Sports (Cricket, football, and world sports)
+
+## Usage Guidelines
+- Content may be cited with attribution to "NeevNews (neevnews.com)"
+- Links to original articles are appreciated
+- All content is freely accessible (no paywall)
+
+## Structure
+- Homepage: https://neevnews.com/
+- Category pages: https://neevnews.com/category/{category-slug}/
+- Article pages: https://neevnews.com/{category-slug}/{article-slug}/
+- RSS Feed: https://neevnews.com/rss.xml

@@ -113,8 +113,8 @@ module.exports = {
   defaultImage: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
 
   // Maximum articles to publish per day
-  maxArticlesPerDay: 40,
+  maxArticlesPerDay: 10,
 
   // Maximum articles per category per run
-  maxPerCategoryPerRun: 10,
+  maxPerCategoryPerRun: 3,
 };

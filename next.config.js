@@ -18,35 +18,35 @@ const nextConfig = {
 
   async headers() {
     return [
-      // Force fresh HTML for news pages (instant updates)
+      // News pages: short CDN cache, always revalidate for freshness
       {
         source: '/',
         headers: [
-          { key: 'Cache-Control', value: 'no-store, max-age=0' },
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=60' },
         ],
       },
       {
         source: '/news',
         headers: [
-          { key: 'Cache-Control', value: 'no-store, max-age=0' },
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=60' },
         ],
       },
       {
         source: '/news/',
         headers: [
-          { key: 'Cache-Control', value: 'no-store, max-age=0' },
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=60' },
         ],
       },
       {
         source: '/category/:slug*',
         headers: [
-          { key: 'Cache-Control', value: 'no-store, max-age=0' },
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=60' },
         ],
       },
       {
-        source: '/article/:slug*',
+        source: '/:category/:slug*',
         headers: [
-          { key: 'Cache-Control', value: 'no-store, max-age=0' },
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=60' },
         ],
       },
       {
@@ -57,7 +57,7 @@ const nextConfig = {
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
     ];

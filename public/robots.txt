@@ -1,15 +1,50 @@
-# *
+# https://www.robotstxt.org/robotstxt.html
+
+# Default: allow everything except admin
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /api
+Disallow: /admin/
+# Block /api EXCEPT sitemap and RSS endpoints (served via rewrites)
+Disallow: /api/
+Allow: /api/sitemap.xml
+Allow: /api/sitemap-news.xml
+Allow: /api/rss.xml
 
 # Googlebot
 User-agent: Googlebot
 Allow: /
 
-# Googlebot-News
+# Googlebot-News (Google News crawler)
 User-agent: Googlebot-News
+Allow: /
+
+# AI Crawlers - explicitly allowed for discoverability
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Cohere-ai
 Allow: /
 
 # Host
@@ -19,3 +54,6 @@ Host: https://neevnews.com
 Sitemap: https://neevnews.com/sitemap.xml
 Sitemap: https://neevnews.com/sitemap-news.xml
 Sitemap: https://neevnews.com/server-sitemap.xml
+
+# RSS Feed
+Sitemap: https://neevnews.com/rss.xml

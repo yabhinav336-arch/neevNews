@@ -33,7 +33,7 @@ export default async function handler(req: NextRequest) {
     <description>Stay informed with NeevNews - your trusted source for breaking news, global headlines, and in-depth analysis.</description>
     <language>en-US</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="https://neevnews.com/api/rss.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="https://neevnews.com/rss.xml" rel="self" type="application/rss+xml"/>
     <copyright>Copyright ${new Date().getFullYear()} NeevNews. All rights reserved.</copyright>
     <managingEditor>abhinavvoicebox@gmail.com (NeevNews Editorial Team)</managingEditor>
     <webMaster>abhinavvoicebox@gmail.com (NeevNews Tech Team)</webMaster>

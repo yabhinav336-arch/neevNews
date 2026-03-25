@@ -19,7 +19,7 @@ module.exports = {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/api'],
+        disallow: ['/admin'],
       },
       {
         userAgent: 'Googlebot',
@@ -29,10 +29,35 @@ module.exports = {
         userAgent: 'Googlebot-News',
         allow: '/',
       },
+      {
+        userAgent: 'GPTBot',
+        allow: '/',
+      },
+      {
+        userAgent: 'ChatGPT-User',
+        allow: '/',
+      },
+      {
+        userAgent: 'Google-Extended',
+        allow: '/',
+      },
+      {
+        userAgent: 'Anthropic-ai',
+        allow: '/',
+      },
+      {
+        userAgent: 'ClaudeBot',
+        allow: '/',
+      },
+      {
+        userAgent: 'PerplexityBot',
+        allow: '/',
+      },
     ],
     additionalSitemaps: [
       'https://neevnews.com/sitemap-news.xml',
       'https://neevnews.com/server-sitemap.xml',
+      'https://neevnews.com/rss.xml',
     ],
   },
 
