@@ -46,12 +46,19 @@ async function fetchImagesForArticles(articles) {
         }
       }
 
-      // If image fetch or upload failed, keep the original imageUrl
-      console.log('   \u2139\ufe0f  Keeping original image for: ' + article.title.substring(0, 50) + '...');
-      updated.push(article);
+      // If image fetch or upload failed, check if we have a valid original RSS image.
+      // If we only have the default placeholder, drop the article completely.
+      if (article.imageUrl && article.imageUrl !== rssSources.defaultImage) {
+        console.log('   \u2139\ufe0f  Keeping original RSS image for: ' + article.title.substring(0, 50) + '...');
+        updated.push(article);
+      } else {
+        console.log('   \u26a0\ufe0f  No relevant image found. Dropping article: ' + article.title.substring(0, 50) + '...');
+      }
     } catch (error) {
       console.error('   \u274c Image processing error: ' + error.message);
-      updated.push(article);
+      if (article.imageUrl && article.imageUrl !== rssSources.defaultImage) {
+        updated.push(article);
+      }
     }
 
     // Delay between searches to avoid rate-limiting by Google
@@ -107,6 +114,8 @@ async function runNewsAgent() {
     // Step 7: Cleanup old cached images from disk
     cleanupOldImages();
 
+    const droppedDuringImageFetch = eligible.length - articlesWithImages.length;
+
     // Summary
     console.log('='.repeat(60));
     console.log('✅ RSS AGENT RUN COMPLETE');
@@ -115,9 +124,10 @@ async function runNewsAgent() {
     console.log(`   - Fetched: ${allArticles.length} articles`);
     console.log(`   - Unique (pre-AI): ${uniqueArticles.length} articles`);
     console.log(`   - Eligible (post-limits): ${eligible.length} articles`);
+    console.log(`   - Dropped (no image): ${droppedDuringImageFetch} articles`);
     console.log(`   - Published: ${results.saved} articles`);
-    console.log(`   - Skipped: ${skipped + results.skipped} articles`);
-    console.log(`   - Errors: ${results.errors} articles`);
+    console.log(`   - Skipped (limits): ${skipped + results.skipped} articles`);
+    console.log(`   - Errors during save: ${results.errors} articles`);
     console.log('='.repeat(60) + '\n');
 
   } catch (error) {

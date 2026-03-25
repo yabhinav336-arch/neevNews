@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, writeBatch } from 'firebase/firestore/lite';
-import { db } from '../utils/firebase';
+import { ref, deleteObject } from 'firebase/storage';
+import { db, storage } from '../utils/firebase';
 import { categories } from '../utils/data';
 import {
   Plus,
@@ -192,15 +193,34 @@ const Admin = () => {
     }
   };
 
-  // Delete a story
+  // Delete a story and its Firebase Storage image
   const handleDelete = async (storyId: string) => {
     if (!confirm('Are you sure you want to delete this story? This action cannot be undone.')) {
       return;
     }
 
     try {
+      // Find the story to get its imageUrl before deleting
+      const story = stories.find(s => s.id === storyId);
+
+      // Delete image from Firebase Storage if it's a Firebase URL
+      if (story?.imageUrl && story.imageUrl.includes('firebasestorage.googleapis.com')) {
+        try {
+          const match = story.imageUrl.match(/\/o\/([^?]+)/);
+          if (match && match[1]) {
+            const storagePath = decodeURIComponent(match[1]);
+            await deleteObject(ref(storage, storagePath));
+          }
+        } catch (imgErr: any) {
+          // Don't block article deletion if image delete fails
+          if (imgErr?.code !== 'storage/object-not-found') {
+            console.warn('Image delete failed (continuing):', imgErr);
+          }
+        }
+      }
+
       await deleteDoc(doc(db, 'news', storyId));
-      setStories(stories.filter(story => story.id !== storyId));
+      setStories(stories.filter(s => s.id !== storyId));
     } catch (error) {
       console.error('Error deleting story:', error);
       alert('Failed to delete story');
@@ -495,8 +515,8 @@ const Admin = () => {
                   if (item.id === 'list' || item.id === 'homepage' || item.id === 'featured') fetchStories();
                 }}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${view === item.id
-                    ? 'bg-primary-600 text-white'
-                    : 'text-secondary-300 hover:bg-secondary-800 hover:text-white'
+                  ? 'bg-primary-600 text-white'
+                  : 'text-secondary-300 hover:bg-secondary-800 hover:text-white'
                   }`}
               >
                 {item.icon}
@@ -642,8 +662,8 @@ const Admin = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className={`px-2 py-1 text-xs rounded ${story.status === 'published'
-                              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                              : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                            ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                            : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
                             }`}>
                             {story.status}
                           </span>
@@ -693,8 +713,8 @@ const Admin = () => {
                   </p>
                   {rssAgentResult && (
                     <div className={`mt-3 text-xs p-2 rounded ${rssAgentResult.success
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                       }`}>
                       {rssAgentResult.saved > 0 && (
                         <div>✅ Saved: {rssAgentResult.saved} articles</div>
@@ -843,8 +863,8 @@ const Admin = () => {
                             <button
                               onClick={() => togglePublish(story.id, story.status)}
                               className={`px-2 py-1 text-xs rounded font-medium ${story.status === 'published'
-                                  ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                                  : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                                : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
                                 }`}
                             >
                               {story.status}
@@ -926,16 +946,16 @@ const Admin = () => {
                     <div
                       key={story.id}
                       className={`flex items-center justify-between p-4 rounded-lg border ${story.isBreaking
-                          ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20'
-                          : 'border-secondary-200 dark:border-secondary-700'
+                        ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20'
+                        : 'border-secondary-200 dark:border-secondary-700'
                         }`}
                     >
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => toggleBreaking(story.id, story.isBreaking || false)}
                           className={`p-2 rounded-lg transition-colors duration-200 ${story.isBreaking
-                              ? 'bg-red-600 text-white'
-                              : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
                             }`}
                         >
                           <Zap size={18} />
@@ -974,16 +994,16 @@ const Admin = () => {
                     <div
                       key={story.id}
                       className={`flex items-center justify-between p-4 rounded-lg border ${story.featured
-                          ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20'
-                          : 'border-secondary-200 dark:border-secondary-700'
+                        ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20'
+                        : 'border-secondary-200 dark:border-secondary-700'
                         }`}
                     >
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => toggleFeatured(story.id, story.featured)}
                           className={`p-2 rounded-lg transition-colors duration-200 ${story.featured
-                              ? 'bg-purple-600 text-white'
-                              : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
                             }`}
                         >
                           <Star size={18} />
@@ -1022,16 +1042,16 @@ const Admin = () => {
                     <div
                       key={story.id}
                       className={`flex items-center justify-between p-4 rounded-lg border ${story.isPinned
-                          ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-secondary-200 dark:border-secondary-700'
+                        ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-secondary-200 dark:border-secondary-700'
                         }`}
                     >
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => togglePinned(story.id, story.isPinned || false)}
                           className={`p-2 rounded-lg transition-colors duration-200 ${story.isPinned
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
                             }`}
                         >
                           {story.isPinned ? <Pin size={18} /> : <PinOff size={18} />}
@@ -1079,16 +1099,16 @@ const Admin = () => {
                       <div
                         key={story.id}
                         className={`flex items-center justify-between p-3 rounded-lg border ${story.isTrending
-                            ? 'border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20'
-                            : 'border-secondary-200 dark:border-secondary-700'
+                          ? 'border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20'
+                          : 'border-secondary-200 dark:border-secondary-700'
                           }`}
                       >
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                           <button
                             onClick={() => toggleTrending(story.id, story.isTrending || false)}
                             className={`p-2 rounded-lg transition-colors duration-200 flex-shrink-0 ${story.isTrending
-                                ? 'bg-orange-600 text-white'
-                                : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
+                              ? 'bg-orange-600 text-white'
+                              : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
                               }`}
                           >
                             <TrendingUp size={16} />
@@ -1119,16 +1139,16 @@ const Admin = () => {
                       <div
                         key={story.id}
                         className={`flex items-center justify-between p-3 rounded-lg border ${story.featured
-                            ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20'
-                            : 'border-secondary-200 dark:border-secondary-700'
+                          ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20'
+                          : 'border-secondary-200 dark:border-secondary-700'
                           }`}
                       >
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                           <button
                             onClick={() => toggleFeatured(story.id, story.featured)}
                             className={`p-2 rounded-lg transition-colors duration-200 flex-shrink-0 ${story.featured
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
+                              ? 'bg-purple-600 text-white'
+                              : 'bg-secondary-200 dark:bg-secondary-700 text-secondary-600 dark:text-secondary-400'
                               }`}
                           >
                             <Star size={16} />
@@ -1550,8 +1570,8 @@ const Admin = () => {
                       <div className="flex justify-between">
                         <span className="text-secondary-500">Status:</span>
                         <span className={`px-2 py-0.5 text-xs rounded ${formData.status === 'published'
-                            ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                            : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                          ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                          : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
                           }`}>
                           {formData.status}
                         </span>
@@ -1559,10 +1579,10 @@ const Admin = () => {
                       <div className="flex justify-between">
                         <span className="text-secondary-500">Meta desc length:</span>
                         <span className={`font-mono text-xs ${(formData.metaDescription || formData.summary).length > 160
-                            ? 'text-red-500'
-                            : (formData.metaDescription || formData.summary).length > 120
-                              ? 'text-yellow-500'
-                              : 'text-green-500'
+                          ? 'text-red-500'
+                          : (formData.metaDescription || formData.summary).length > 120
+                            ? 'text-yellow-500'
+                            : 'text-green-500'
                           }`}>
                           {(formData.metaDescription || formData.summary).length}/160
                         </span>
